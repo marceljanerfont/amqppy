@@ -5,6 +5,7 @@ import pika
 import logging
 import threading
 import time
+import json
 import sys
 import os
 
@@ -31,55 +32,81 @@ class Worker(object):
     def __init__(self, broker, heartbeat_sec=None):
         self._conn = utils.create_connection(broker=broker, heartbeat_sec=heartbeat_sec)
         self._channels = {}
+        self._exchanges = {}
         self.quit = False
         self.thread = None
+
+    def __del__(self):
+        logger.debug("consumer worker destructor")
+        self._close()
+
+    def _close(self):
+        for channel in self._channels:
+            if self._channels[channel] and self._channels[channel].is_open:
+                logger.debug("closing {} channel".format(channel))
+                self._channels[channel].close()
+                self._channels[channel] = None
+        self._channels = {}
+        self._excahnges = {}
+        if self._conn:
+            logger.debug('closing connection')
+            self._conn.close()
+            self._conn = None
+
+    def _create_channel(self, exchange, request_func):
+        try:
+            channel = self._conn.channel()
+            channel.exchange_declare(exchange=exchange, exchange_type="topic", passive=True)
+            self._exchanges[request_func] = exchange
+            self._channels[request_func] = channel
+            return channel
+        except:
+            channel = self._conn.channel()
+            channel.exchange_declare(exchange=exchange, exchange_type="topic", passive=False, durable=True, auto_delete=True)
+            self._exchanges[request_func] = exchange
+            self._channels[request_func] = channel
+            return channel
 
     def stop(self):
         logger.debug("stop")
         self.quit = True
-        logger.debug('Closing AMQP connection...')
-        if self._conn:
-            self._conn.close()
-        logger.debug('AMQP connection closed.')
         self.join()
+        self._close()
 
     def add_request(self, routing_key, request_func, exchange=amqppy.AMQP_EXCHANGE, durable=False, auto_delete=True,
                     exclusive=False):
         """ Register a new consumer task. These tasks will be execute when a new message arrive
-        at :param:`queue_name`, which is binded to the self.exchange with :param:`routing_key`.
+        at :param:`queue_name`, which is binded to the exchange with :param:`routing_key`.
         """
         logger.debug("adding request: {} --> {}".format(routing_key, request_func))
-        self.exchange = exchange
-        channel = self._conn.channel()
+        channel = self._create_channel(exchange, request_func)
         channel.queue_declare(queue=routing_key, durable=durable, auto_delete=auto_delete)
-        channel.queue_bind(queue=routing_key, exchange=self.exchange, routing_key=routing_key)
+        channel.queue_bind(queue=routing_key, exchange=exchange, routing_key=routing_key)
         channel.confirm_delivery()
         channel.basic_consume(
             exclusive=exclusive,
             queue=routing_key,
             consumer_callback=self._profiler_wrapper(request_func),
             no_ack=True)
-        self._channels[request_func] = channel
+        
         return self  # Fluent pattern
 
     def add_topic(self, routing_key, request_func, queue=None, exclusive=False, exchange=amqppy.AMQP_EXCHANGE, durable=False,
                   auto_delete=True, no_ack=True, **kwargs):
         """ Register a new consumer task. These tasks will be execute when a new message arrive
-        at :param:`queue_name`, which is binded to the self.exchange with :param:`routing_key`.
+        at :param:`queue_name`, which is binded to the exchange with :param:`routing_key`.
         """
         logger.debug("adding topic: {} --> {}".format(routing_key, request_func, kwargs))
-        self.exchange = exchange
         self.no_ack = no_ack
-        channel = self._conn.channel()
+        channel = self._create_channel(exchange, request_func)
         queue_name = queue if queue else routing_key
         channel.queue_declare(queue=queue_name, exclusive=exclusive, durable=durable, auto_delete=auto_delete,
                               arguments=kwargs)
-        channel.queue_bind(queue=queue_name, exchange=self.exchange, routing_key=routing_key)
+        channel.queue_bind(queue=queue_name, exchange=exchange, routing_key=routing_key)
         channel.basic_consume(
             queue=queue_name,
             consumer_callback=self._profiler_wrapper_topic(request_func),
             no_ack=no_ack)
-        self._channels[request_func] = channel
         return self  # Fluent pattern
 
     def _profiler_wrapper(self, request_func):
@@ -105,23 +132,24 @@ class Worker(object):
                                                                                          traceback.format_exc()))
                 response = {
                     u"success": False,
-                    u"failure": u"{}".format(e)
+                    u"error": u"{}".format(e)
                 }
             elapsed = time.time() - start
             logger.debug('Request \'{}\' finished. Time elapsed: {}'.format(request_func.__name__, elapsed))
 
             # sending response back
             channel = self._channels[request_func]
+            exchange = self._exchanges[request_func]
             routing_key = properties.reply_to
             logger.debug('Sending RPC response to routing key: {}'.format(routing_key))
             try:
                 publish_result = channel.basic_publish(
-                    exchange=self.exchange,
+                    exchange=exchange,
                     routing_key=routing_key,
                     properties=pika.BasicProperties(
                         correlation_id=properties.correlation_id,
                         content_type='application/json'),
-                    body=utils.json_dumps(response) if isinstance(response, dict) else response,
+                    body=json.dumps(response),
                     mandatory=True)
                 if not publish_result:
                     raise amqppy.PublishNotRouted("Request response was not routed")

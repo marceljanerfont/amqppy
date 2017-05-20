@@ -66,9 +66,13 @@ class Publisher(object):
 
     def __del__(self):
         logger.debug("publisher destructor")
+        self._close_channel()
+
+    def _close_channel(self):
         if self.channel:
             logger.debug("closing channel")
             self.channel.close()
+            self.channel = None
 
     def publish(self, exchange, routing_key, body, headers=None, persistent=True):
         """Publish a message to the given exchange, routing key.
@@ -95,10 +99,7 @@ class Publisher(object):
                 logger.debug("Publisher published message was not routed")
                 raise amqppy.PublishNotRouted("Publisher published message was not routed")
         finally:
-            if self.channel:
-                logger.debug("closing channel")
-                self.channel.close()
-                self.channel = None
+            self._close_channel()
 
 class Rpc(object):
     # def __init__(self, broker=None, host=None, port=5672, username="guest", password="guest", virtual_host="/"):
@@ -108,10 +109,14 @@ class Rpc(object):
         self.connection = connection
 
     def __del__(self):
-        logger.debug("rpc destructor")
+        logger.debug("rpc publisher destructor")
+        self._close_channel()
+
+    def _close_channel(self):
         if self.channel:
             logger.debug("closing channel")
             self.channel.close()
+            self.channel = None
 
     def on_response(self, ch, method, props, body):
         if self.corr_id == props.correlation_id:
@@ -170,10 +175,7 @@ class Rpc(object):
                     raise amqppy.ResponseTimeout("AMQP RPC Timeout has been triggered waiting for the response")
             return self.response
         finally:
-            if self.channel:
-                logger.debug("closing channel")
-                self.channel.close()
-                self.channel = None
+            self._close_channel()
 
 ####################################################################
 
