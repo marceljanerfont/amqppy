@@ -1,6 +1,8 @@
 # -*- encoding: utf-8 -*-
 import traceback
 from functools import wraps
+import collections
+# from collections import namedtupla
 import pika
 import logging
 import threading
@@ -23,6 +25,8 @@ logger.setLevel(logging.DEBUG)
 ####################################################################
 
 
+_ChannelExchange = collections.namedtuple('ChannelExchange', ['channel', 'exchange'])
+
 
 class Worker(object):
     """ Encapsulate the worker setup.
@@ -43,7 +47,8 @@ class Worker(object):
 
     def _close(self):
         for callback in self._callbacks:
-            self._callbacks[callback].close()
+            if self._callbacks[callback].channel and self._callbacks[callback].channel.is_open:
+                self._callbacks[callback].channel.close()
         self._callbacks = {}
 
         if self._conn:
@@ -205,31 +210,8 @@ class Worker(object):
     def run_async(self):
         self.thread = threading.Thread(target=self.run)
         self.thread.start()
+        return self  # Fluent pattern
 
     def join(self):
         if self.thread:
             self.thread.join()
-
-
-class _ChannelExchange(object):
-        _channel = None
-        _exchange = None
-        
-        def __init__(self, channel, exchange):
-            self._channel = channel
-            self._exchange = exchange
-
-        @property
-        def channel(self):
-            return self._channel
-
-        @property
-        def exchange(self):
-            return self._exchange
-
-        def close(self):
-            if self._channel and self._channel.is_open:
-                self._channel.close()
-                self._channel = None
-
-

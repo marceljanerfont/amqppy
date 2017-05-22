@@ -87,7 +87,7 @@ class Publisher(object):
         self.channel = self.connection.channel()
         try:
             self.channel.confirm_delivery()
-            logger.debug("publishing message")
+            logger.debug("publishing message at exchange: {} and routing_key: {}".format(exchange, routing_key))
             publish_result = self.channel.basic_publish(exchange=exchange,
                                                         routing_key=routing_key,
                                                         properties=pika.BasicProperties(
