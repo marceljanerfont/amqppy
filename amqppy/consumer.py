@@ -23,6 +23,7 @@ logger.setLevel(logging.DEBUG)
 ####################################################################
 
 
+
 class Worker(object):
     """ Encapsulate the worker setup.
 
@@ -31,8 +32,8 @@ class Worker(object):
     """
     def __init__(self, broker, heartbeat_sec=None):
         self._conn = utils.create_connection(broker=broker, heartbeat_sec=heartbeat_sec)
-        self._channels = {}
-        self._exchanges = {}
+        # map(callback) -> (channel, exchange)
+        self._callbacks = {}
         self.quit = False
         self.thread = None
 
@@ -41,13 +42,10 @@ class Worker(object):
         self._close()
 
     def _close(self):
-        for channel in self._channels:
-            if self._channels[channel] and self._channels[channel].is_open:
-                logger.debug("closing {} channel".format(channel))
-                self._channels[channel].close()
-                self._channels[channel] = None
-        self._channels = {}
-        self._excahnges = {}
+        for callback in self._callbacks:
+            self._callbacks[callback].close()
+        self._callbacks = {}
+
         if self._conn:
             logger.debug('closing connection')
             self._conn.close()
@@ -57,14 +55,12 @@ class Worker(object):
         try:
             channel = self._conn.channel()
             channel.exchange_declare(exchange=exchange, exchange_type="topic", passive=True)
-            self._exchanges[request_func] = exchange
-            self._channels[request_func] = channel
+            self._callbacks[request_func] = _ChannelExchange(channel, exchange)
             return channel
         except:
             channel = self._conn.channel()
             channel.exchange_declare(exchange=exchange, exchange_type="topic", passive=False, durable=True, auto_delete=True)
-            self._exchanges[request_func] = exchange
-            self._channels[request_func] = channel
+            self._callbacks[request_func] = _ChannelExchange(channel, exchange)
             return channel
 
     def stop(self):
@@ -78,7 +74,7 @@ class Worker(object):
         """ Register a new consumer task. These tasks will be execute when a new message arrive
         at :param:`queue_name`, which is binded to the exchange with :param:`routing_key`.
         """
-        logger.debug("adding request: {} --> {}".format(routing_key, request_func))
+        logger.debug("adding request, exchange: {}, topic: {} --> {}".format(exchange, routing_key, request_func))
         channel = self._create_channel(exchange, request_func)
         channel.queue_declare(queue=routing_key, durable=durable, auto_delete=auto_delete)
         channel.queue_bind(queue=routing_key, exchange=exchange, routing_key=routing_key)
@@ -96,7 +92,7 @@ class Worker(object):
         """ Register a new consumer task. These tasks will be execute when a new message arrive
         at :param:`queue_name`, which is binded to the exchange with :param:`routing_key`.
         """
-        logger.debug("adding topic: {} --> {}".format(routing_key, request_func, kwargs))
+        logger.debug("adding topic, exchange: {}, topic: {} --> {}".format(exchange, routing_key, request_func, kwargs))
         self.no_ack = no_ack
         channel = self._create_channel(exchange, request_func)
         queue_name = queue if queue else routing_key
@@ -123,7 +119,7 @@ class Worker(object):
             try:
                 response = {
                     # message is text, it should be converted in dictionary at request func
-                    "result": request_func(routing_key=deliver.routing_key, body=message, headers=properties.headers),
+                    "result": request_func(exchange=deliver.exchange, routing_key=deliver.routing_key, headers=properties.headers, body=message),
                     "success": True
                 }
             except Exception as e:
@@ -138,8 +134,8 @@ class Worker(object):
             logger.debug('Request \'{}\' finished. Time elapsed: {}'.format(request_func.__name__, elapsed))
 
             # sending response back
-            channel = self._channels[request_func]
-            exchange = self._exchanges[request_func]
+            channel = self._callbacks[request_func].channel
+            exchange = self._callbacks[request_func].exchange
             routing_key = properties.reply_to
             logger.debug('Sending RPC response to routing key: {}'.format(routing_key))
             try:
@@ -162,7 +158,7 @@ class Worker(object):
     def _profiler_wrapper_topic(self, request_func):
         @wraps(request_func)
         def _wrapper(*args, **kwargs):
-            logger.debug("request \'{}\'.*args: {}".format(request_func.__name__, args))
+            logger.debug("topic \'{}\'.*args: {}".format(request_func.__name__, args))
             # logger.debug("request \'{}\'.**kwargs: {}".format(request_func.__name__, kwargs))
             # process request arguments
             deliver = args[1]
@@ -181,7 +177,7 @@ class Worker(object):
             do_consume = True
             move_to_dead_letter = False
             try:
-                request_func(routing_key=deliver.routing_key, body=message, headers=properties.headers)
+                request_func(exchange=deliver.exchange, routing_key=deliver.routing_key, headers=properties.headers, body=message)
             except amqppy.AbortConsume as e:
                 do_consume = False
                 logger.warning("AbortConsume exception: {}".format(e))
@@ -191,21 +187,15 @@ class Worker(object):
             elapsed = time.time() - start
             logger.debug('Request \'{}\' finished. Time elapsed: {}'.format(request_func.__name__, elapsed))
             if move_to_dead_letter:
-                self._channels[request_func].basic_reject(delivery_tag=deliver.delivery_tag, requeue=False)
+                self._callbacks[request_func].channel.basic_reject(delivery_tag=deliver.delivery_tag, requeue=False)
                 logger.debug("Reject message and move to dead letter.")
             elif not self.no_ack and do_consume:
-                self._channels[request_func].basic_ack(delivery_tag=deliver.delivery_tag)
+                self._callbacks[request_func].channel.basic_ack(delivery_tag=deliver.delivery_tag)
                 logger.debug("ACK sent")
         return _wrapper
 
     def run(self):
         """ Start consumption """
-        """
-        logger.debug('AMQP Request Worker initializing...')
-        logger.debug('Registered {} requests tasks'.format(len(self._channels)))
-        for request_func in self._channels:
-            logger.debug('--> {}'.format(request_func.func_name))
-        """
         logger.debug('Running worker, waiting for the first message...')
         while not self.quit:
             self._conn.process_data_events()
@@ -219,3 +209,27 @@ class Worker(object):
     def join(self):
         if self.thread:
             self.thread.join()
+
+
+class _ChannelExchange(object):
+        _channel = None
+        _exchange = None
+        
+        def __init__(self, channel, exchange):
+            self._channel = channel
+            self._exchange = exchange
+
+        @property
+        def channel(self):
+            return self._channel
+
+        @property
+        def exchange(self):
+            return self._exchange
+
+        def close(self):
+            if self._channel and self._channel.is_open:
+                self._channel.close()
+                self._channel = None
+
+

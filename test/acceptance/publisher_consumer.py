@@ -22,11 +22,11 @@ BROKER_TEST = "amqp://guest:guest@localhost:5672//"
 class PublisherConsumerTests(unittest.TestCase):
     def setUp(self):
         pass
-
+    """
     def test_topic(self):
         condition = threading.Event()
-        def callback_topic(routing_key, body, headers):
-            print("*** topic callback, routing_key: {}, body: {}, headers: {}".format(routing_key, body, headers))
+        def callback_topic(exchange, routing_key, headers, body):
+            print("*** topic callback, exchange: {}, outing_key: {}, body: {}, headers: {}".format(exchange, routing_key, headers, body))
             condition.set()
 
             
@@ -40,16 +40,15 @@ class PublisherConsumerTests(unittest.TestCase):
 
         publisher.publish(
             broker=BROKER_TEST,
-            exchange="amqppy.test",
+            exchange=EXCHANGE_TEST,
             routing_key="amqppy.test.topic",
             body=json.dumps({'msg': 'hello world!'}))
 
         condition.wait()
         worker.stop()
 
-
     def test_rpc(self):
-        def callback_request(routing_key, body, headers):
+        def callback_request(exchange, routing_key, headers, body):
             return json.dumps(dict(value="Hello budy!"))
 
         worker = consumer.Worker(broker=BROKER_TEST).add_request(exchange=EXCHANGE_TEST,
@@ -65,6 +64,45 @@ class PublisherConsumerTests(unittest.TestCase):
             body=json.dumps({'msg': 'hello world!'}))
         print("*** rpc_response: {}".format(rpc_response))
 
+        worker.stop()
+    """
+
+    def test_many_topics_same_topic_different_exchanges(self):
+        condition = threading.Event()
+        def callback_topic_one(exchange, routing_key, headers, body):
+            print("*** topic ONE callback, exchange: {}, outing_key: {}, body: {}, headers: {}".format(exchange, routing_key, headers, body))
+            condition.set()
+
+        def callback_topic_two(**kargs):
+            print("*** topic TWO callback, {}".format(kargs))
+            condition.set()
+
+            
+        worker = consumer.Worker(broker=BROKER_TEST).\
+                                add_topic(exchange=EXCHANGE_TEST + ".1",
+                                          routing_key="amqppy.test.topic",
+                                          request_func=callback_topic_one).\
+                                add_topic(exchange=EXCHANGE_TEST + ".2",
+                                          routing_key="amqppy.test.topic",
+                                          request_func=callback_topic_two)
+
+        worker.run_async()
+
+        publisher.publish(
+            broker=BROKER_TEST,
+            exchange=EXCHANGE_TEST + ".1",
+            routing_key="amqppy.test.topic",
+            body=json.dumps({'msg': 'hello world! 1'}))
+
+        publisher.publish(
+            broker=BROKER_TEST,
+            exchange=EXCHANGE_TEST + ".2",
+            routing_key="amqppy.test.topic",
+            body=json.dumps({'msg': 'hello world! 2'}))
+
+        print("waiting..")
+        condition.wait()
+        print("stopping")
         worker.stop()
 
 
