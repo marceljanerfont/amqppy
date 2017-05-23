@@ -1,7 +1,7 @@
 language: python
 python:
   # - 2.7
-  - 3.2
+  # - 3.2
   # - 3.5
   - 3.6
 # command to install dependencies
@@ -12,6 +12,7 @@ install:
 #  - rabbitmq
 # command to run unit and acceptance tests
 script: 
+  - pwd
   - coverage run test/unit/test_utils.py
   # - python -m unittest discover test/unit
   # - python -m unittest discover test/acceptance
