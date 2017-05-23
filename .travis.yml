@@ -12,7 +12,7 @@ install:
 #  - rabbitmq
 # command to run unit and acceptance tests
 script: 
-  - coverage run test/unit/utils_test.py
+  - coverage run test/unit/test_utils.py
   # - python -m unittest discover test/unit
   # - python -m unittest discover test/acceptance
 
