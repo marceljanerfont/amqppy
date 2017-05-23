@@ -132,8 +132,8 @@ class Worker(object):
                                                                                          deliver.routing_key,
                                                                                          traceback.format_exc()))
                 response = {
-                    u"success": False,
-                    u"error": u"{}".format(e)
+                    "success": False,
+                    "error": u"{}".format(e)
                 }
             elapsed = time.time() - start
             logger.debug('Request \'{}\' finished. Time elapsed: {}'.format(request_func.__name__, elapsed))
