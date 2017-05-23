@@ -8,14 +8,12 @@ python:
 install: 
   - pip install -r requirements.txt
   - pip install codecov
-# services:
-#  - rabbitmq
+services:
+  - rabbitmq
 # command to run unit and acceptance tests
 script: 
-  # - coverage run test/unit/test_utils.py
   - coverage run -m unittest discover -s test/unit
-  # - python -m unittest discover test/unit
-  # - python -m unittest discover test/acceptance
+  - coverage run -m unittest discover -s test/acceptance
 
 # 1d531834-8fd8-4b09-befc-9ab3ea7b86b1
 after_success:
