@@ -11,6 +11,6 @@ install: "pip install -r requirements.txt"
 services:
   - rabbitmq
 # command to run unit tests
-script: python -m unittest discover unit
+script: python -m unittest discover test/unit
 # command to run acceptance tests
-script: python -m unittest discover acceptance
+script: python -m unittest discover test/acceptance
