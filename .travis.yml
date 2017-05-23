@@ -12,7 +12,8 @@ install:
 #  - rabbitmq
 # command to run unit and acceptance tests
 script: 
-  - coverage run python -m unittest discover test/unit
+  - coverage run test/unit/utils_test.py
+  # - python -m unittest discover test/unit
   # - python -m unittest discover test/acceptance
 
 # 1d531834-8fd8-4b09-befc-9ab3ea7b86b1
