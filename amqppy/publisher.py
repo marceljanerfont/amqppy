@@ -98,8 +98,13 @@ class Publisher(object):
             if not publish_result:
                 logger.debug("Publisher published message was not routed")
                 raise amqppy.PublishNotRouted("Publisher published message was not routed")
+        except pika.exceptions.ChannelClosed as e:
+            if "NOT_FOUND - no exchange" in str(e):
+                raise amqppy.ExchangeNotFound(str(e))
+
         finally:
             self._close_channel()
+
 
 class Rpc(object):
     # def __init__(self, broker=None, host=None, port=5672, username="guest", password="guest", virtual_host="/"):

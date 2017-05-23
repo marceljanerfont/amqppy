@@ -62,7 +62,7 @@ class Worker(object):
             channel.exchange_declare(exchange=exchange, exchange_type="topic", passive=True)
             self._callbacks[request_func] = _ChannelExchange(channel, exchange)
             return channel
-        except:
+        except Exception:
             channel = self._conn.channel()
             channel.exchange_declare(exchange=exchange, exchange_type="topic", passive=False, durable=True, auto_delete=True)
             self._callbacks[request_func] = _ChannelExchange(channel, exchange)
@@ -89,7 +89,7 @@ class Worker(object):
             queue=routing_key,
             consumer_callback=self._profiler_wrapper(request_func),
             no_ack=True)
-        
+
         return self  # Fluent pattern
 
     def add_topic(self, routing_key, request_func, queue=None, exclusive=False, exchange=amqppy.AMQP_EXCHANGE, durable=False,
@@ -154,22 +154,25 @@ class Worker(object):
                     mandatory=True)
                 if not publish_result:
                     raise amqppy.PublishNotRouted("Request response was not routed")
+            except amqppy.PublishNotRouted:
+                # don't raise it
+                logger.warning("RPC response it has not been published, it might be due to a response waiting timeout")
             except Exception:
                 logger.error('Exception on publish message to routing_key: {}. Exception message: {}'.format(
                     routing_key, traceback.format_exc()))
             logger.debug('RPC response sended.')
         return _wrapper
-    
+
     def _profiler_wrapper_topic(self, request_func):
         @wraps(request_func)
         def _wrapper(*args, **kwargs):
             logger.debug("topic \'{}\'.*args: {}".format(request_func.__name__, args))
-            #logger.debug("request \'{}\'.**kwargs: {}".format(request_func.__name__, kwargs))
+            # logger.debug("request \'{}\'.**kwargs: {}".format(request_func.__name__, kwargs))
             # process request arguments
             deliver = args[1]
             properties = args[2]
             message = args[3]
-            #logger.debug("Properties vars: {}".format(vars(properties)))
+            # logger.debug("Properties vars: {}".format(vars(properties)))
             logger.debug("Starting request \'{}\'".format(request_func.__name__))
             start = time.time()
             try:

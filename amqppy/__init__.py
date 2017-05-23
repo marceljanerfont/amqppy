@@ -30,6 +30,10 @@ class PublishNotRouted(Exception):
     pass
 
 
+class ExchangeNotFound(Exception):
+    pass
+
+
 class AbortConsume(Exception):
     pass
 
