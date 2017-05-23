@@ -1,16 +1,20 @@
 language: python
 python:
-  - "2.7"
-  - "3.2"
-  - "3.3"
-  - "3.4"
-  - "3.5"
-  - "3.6"
+  # - 2.7
+  - 3.2
+  # - 3.5
+  - 3.6
 # command to install dependencies
-install: "pip install -r requirements.txt"
-services:
-  - rabbitmq
-# command to run unit tests
-script: python -m unittest discover test/unit
-# command to run acceptance tests
-script: python -m unittest discover test/acceptance
+install: 
+  - pip install -r requirements.txt
+  - pip install codecov
+# services:
+#  - rabbitmq
+# command to run unit and acceptance tests
+script: 
+  - coverage run python -m unittest discover test/unit
+  # - python -m unittest discover test/acceptance
+
+# 1d531834-8fd8-4b09-befc-9ab3ea7b86b1
+after_success:
+  - codecov

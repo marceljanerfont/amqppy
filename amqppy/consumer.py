@@ -133,7 +133,7 @@ class Worker(object):
                                                                                          traceback.format_exc()))
                 response = {
                     "success": False,
-                    "error": u"{}".format(e)
+                    "error": unicode(e)
                 }
             elapsed = time.time() - start
             logger.debug('Request \'{}\' finished. Time elapsed: {}'.format(request_func.__name__, elapsed))
