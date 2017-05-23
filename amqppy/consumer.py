@@ -159,44 +159,33 @@ class Worker(object):
                     routing_key, traceback.format_exc()))
             logger.debug('RPC response sended.')
         return _wrapper
-
+    
     def _profiler_wrapper_topic(self, request_func):
         @wraps(request_func)
         def _wrapper(*args, **kwargs):
             logger.debug("topic \'{}\'.*args: {}".format(request_func.__name__, args))
-            # logger.debug("request \'{}\'.**kwargs: {}".format(request_func.__name__, kwargs))
+            #logger.debug("request \'{}\'.**kwargs: {}".format(request_func.__name__, kwargs))
             # process request arguments
             deliver = args[1]
             properties = args[2]
             message = args[3]
-            # logger.debug("Properties vars: {}".format(vars(properties)))
-            if properties.content_type == 'application/json':
-                try:
-                    message = utils.json_loads(message)
-                except Exception:
-                    logger.warning(traceback.format_exc())
-            # logger.debug("--+-+-+-+-+- message: {}, type: {}".format(message, type(message)))
+            #logger.debug("Properties vars: {}".format(vars(properties)))
             logger.debug("Starting request \'{}\'".format(request_func.__name__))
             start = time.time()
-            # response = request_func(*args, **kwargs)
-            do_consume = True
-            move_to_dead_letter = False
             try:
                 request_func(exchange=deliver.exchange, routing_key=deliver.routing_key, headers=properties.headers, body=message)
+                if not self.no_ack:
+                    self._callbacks[request_func].channel.basic_ack(delivery_tag=deliver.delivery_tag)
+                    logger.debug("ACK sent")
             except amqppy.AbortConsume as e:
-                do_consume = False
                 logger.warning("AbortConsume exception: {}".format(e))
             except amqppy.DeadLetterMessage as e:
-                move_to_dead_letter = True
                 logger.warning("DeadLetterMessage exception: {}".format(e))
-            elapsed = time.time() - start
-            logger.debug('Request \'{}\' finished. Time elapsed: {}'.format(request_func.__name__, elapsed))
-            if move_to_dead_letter:
                 self._callbacks[request_func].channel.basic_reject(delivery_tag=deliver.delivery_tag, requeue=False)
-                logger.debug("Reject message and move to dead letter.")
-            elif not self.no_ack and do_consume:
-                self._callbacks[request_func].channel.basic_ack(delivery_tag=deliver.delivery_tag)
-                logger.debug("ACK sent")
+            finally:
+                elapsed = time.time() - start
+                logger.debug('Request \'{}\' finished. Time elapsed: {}'.format(request_func.__name__, elapsed))
+
         return _wrapper
 
     def run(self):

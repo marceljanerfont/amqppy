@@ -18,6 +18,26 @@ from amqppy import publisher, consumer, utils
 EXCHANGE_TEST = "amqppy.test"
 BROKER_TEST = "amqp://guest:guest@localhost:5672//"
 
+class PublisherTest(unittest.TestCase):
+    def setUp(self):
+        # creates exchange
+        self.connection = utils.create_connection(broker=BROKER_TEST)
+        self.channel = self.connection.channel()
+        self.channel.exchange_declare(exchange=EXCHANGE_TEST, exchange_type="topic", passive=False, durable=True, auto_delete=True)
+
+    def tearDown(self):
+        self.channel.exchange_delete(exchange=EXCHANGE_TEST)
+        self.channel.close()
+        self.connection.close()
+
+    """
+    def test_not_routed(self):
+        self.assertRaises(amqppy.PublishNotRouted, 
+                          publisher.publish(broker=BROKER_TEST,
+                                            exchange=EXCHANGE_TEST,
+                                            routing_key="amqppy.test.topic",
+                                            body=json.dumps({'msg': 'hello world!'})))
+    """
 
 class PublisherConsumerTests(unittest.TestCase):
     def setUp(self):
@@ -211,6 +231,7 @@ class PublisherConsumerTests(unittest.TestCase):
         condition2.wait()
         print("stopping")
         worker.stop()
+        
 
     def tearDown(self):
         pass

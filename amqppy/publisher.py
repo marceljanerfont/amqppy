@@ -69,7 +69,7 @@ class Publisher(object):
         self._close_channel()
 
     def _close_channel(self):
-        if self.channel:
+        if self.channel and self.channel.is_open:
             logger.debug("closing channel")
             self.channel.close()
             self.channel = None
