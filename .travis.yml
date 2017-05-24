@@ -1,11 +1,11 @@
 language: python
 python:
-  #- 2.7
-  - 3.2
-  # - 3.3
-  #- 3.4
-  #- 3.5
-  #- 3.6
+  - 2.7
+  #- 3.2
+  - 3.3
+  - 3.4
+  - 3.5
+  - 3.6
 # command to install dependencies
 install: 
   - pip install -r requirements.txt
@@ -15,6 +15,16 @@ services:
 # command to run unit and acceptance tests
 script: 
   - coverage run -m unittest discover -s test
-
+# code coverage
 after_success:
   - codecov
+deploy:
+  provider: pypi
+  user: marceljanerfont
+  password:
+    secure: G7oFL70Ehgj1FcHC4Iq1BxHhUzaGRyQ1KLD7u9MGXJZn5T7+Pe8upWbp1tElM2L3dHeNughJxGA+YioBeqO30qiShZL8UWbUeY6fsJt8552hsm49hteXKqiM0gjaU1IZUl/1CNvOYFO9Avw2l0decHsGQvM3lYzT4gXVGVJvvum3j1Gx5bsoiORyol2KNzXr0aLr6GfKS4Sx363zAZy5r2tsOOOfM8Iist0hTpd/H/Uw+p8fxVLArW9rRVUMfz9Fs7vXjyply/E+kg/3Q3P2plym6KCepg9N0BKl4Yit7Nvvnmg+Bww61i9eUeCprBgqNeA6ZFX67CQ648euRGyvX0cedEIapZQAqNZ9GmtGygLm/qlg/CssBLILkLi4ZWO3Xh4esrSty/sPQyMjA3cdzFeH4Pj+Vh2Fm1Im1sgXAsg0e/oQQbbNOK/6uArYT2E0GcRqOg+/lR2ximn6z04kawgYPe/cwY4MUG7vPvoJtbYmPCOyGJWQk1C095NIGN3PgMJgaWI5XrwS45VzB87NttZo5A07V9blx2Dhmugo2DT2KYW2iY8VUxagbOBEAvPlyolmcC4HwiecYuftDEcDUNpLTyAtZ6cXt1KtKM1M3waGH/lNLT0UzucRd1x9SRo3dOolF3W9PfxJUfXmlqZ9DLSD8Z8amhimCCG1ip1cBSc=
+  on:
+    python: 2.7
+    tags: true
+    branch: production
+  distributions: sdist bdist_wheel
