@@ -6,7 +6,7 @@ AMQP simplified client for Python
 
 Introduction
 ------------
-amqppy is a very simplified AMQP client stacked over `Pika <https://github.com/pika/pika>`_. It has been tested only with `RabbitMQ <https://www.rabbitmq.com>`_
+amqppy is a very simplified AMQP client stacked over `Pika <https://github.com/pika/pika>`_. It has been tested with `RabbitMQ <https://www.rabbitmq.com>`_, but should also work with other AMQP 0-9-1 brokers.
 
 
 .. |Status| image:: https://img.shields.io/travis/marceljanerfont/amqppy.svg?
