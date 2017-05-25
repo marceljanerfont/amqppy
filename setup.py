@@ -1,26 +1,26 @@
 from setuptools import setup
 
 
-requirements = list()
-requirements.append('pika')
-
 long_description = ('amqppy is a very simplified AMQP client stacked over Pika. '
                     'amqppy is tested with RabbitMQ, but should also work '
                     'with other AMQP 0-9-1 brokers.')
 
 setup(name='amqppy',
-      version='0.0.1',
+      version='0.0.3',
       description='amqppy is a very simplified AMQP client stacked over Pika',
+      keywords=['amqp', 'client', 'rabbitmq', 'amqp client'],
       long_description=open('README.rst').read(),
+      author='Marcel Janer Font',
+      author_email='marceljanerfont@gmail.com',
       maintainer='Marcel Janer Font',
       maintainer_email='marceljanerfont@gmail.com',
       url='https://github.com/marceljanerfont/amqppy',
-      packages=['pika', 'pika.adapters'],
+      packages=['amqppy'],
       license='BSD',
-      install_requires=requirements,
+      install_requires=['pika'],
       package_data={'': ['LICENSE', 'README.rst']},
       classifiers=[
-          'Development Status :: 4 - Beta',
+          'Development Status :: 3 - Alpha',
           'Intended Audience :: Developers',
           'License :: OSI Approved :: BSD License',
           'Natural Language :: English',

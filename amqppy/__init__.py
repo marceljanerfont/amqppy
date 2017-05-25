@@ -1,11 +1,12 @@
 # -*- encoding: utf-8 -*-
-__version__ = '0.0.1'
+__version__ = '0.0.3'
 DEFAULT_PORT = 5672
 AMQP_EXCHANGE = "amqppy"
 AMQP_BROKER = "amqp://localhost:{}//".format(DEFAULT_PORT)
 
 # how to publish a package to pypi
-# http://peterdowns.com/posts/first-time-with-pypi.html
+# https://packaging.python.org/distributing/
+
 import logging
 try:
     # not available in python 2.6

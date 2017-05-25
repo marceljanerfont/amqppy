@@ -24,7 +24,6 @@ logger.addHandler(handler)
 logger.setLevel(logging.DEBUG)
 ####################################################################
 
-
 _ChannelExchange = collections.namedtuple('ChannelExchange', ['channel', 'exchange'])
 
 
