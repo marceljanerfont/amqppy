@@ -6,7 +6,7 @@ long_description = ('amqppy is a very simplified AMQP client stacked over Pika. 
                     'with other AMQP 0-9-1 brokers.')
 
 setup(name='amqppy',
-      version='0.0.1a2',
+      version='0.0.1a3',
       description='amqppy is a very simplified AMQP client stacked over Pika',
       keywords=['amqp', 'client', 'rabbitmq', 'amqp client'],
       long_description=open('README.rst').read(),
