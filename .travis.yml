@@ -1,10 +1,10 @@
 language: python
 python:
-  - 2.7
+  #- 2.7
   #- 3.3
   #- 3.4
   #- 3.5
-  #- 3.6
+  - 3.6
 # command to install dependencies
 install: 
   - pip install -r requirements.txt
@@ -26,6 +26,6 @@ deploy:
   password:
     secure: "E1Bhvr+QVAG38WXObA+MhlqfwUHMiiR+KXj2Z6Ub5Z9a60C+Zn+Bs3faoqVvbr5bDZFqwFOHUtsiwKFrOXbIB8xF7dc0RRCOPqxkAlBt9uladlGYTy3lIrYunrgwWN6kFOPCSzpUuL/RE8r9l2bHLg6s7E3uC0VOFqrdbciqbxFvR0o1rRXbaeP40nF4ECv+PZcjoetv3lOyY3Jpn2ia+0PzRIODneYOPR7pVlUAQX1ebNpMxRMj0vCIrHve47YZlAvQhoCKqN7jjjwSzkGk0SIvWFcKVMKWLz6LchehbdYIjy+rzq2TnGvyoLTLANy24mTlLSQNzwq9KaphBT0WemujR4uS9DjmDm2rNB9reHBzcThF1dyX4fZ+7dBfvN86vXSEVv6QGrVyKo8CIUCPAu1ITr5m0XnGrBYQILz+Z6V4ZTOkjZT+QCOznm9yiGl81wCsefh423R8LhoEURBgdC5x1mDoxog0CqU0GMi+Hyf4uJ++7kE3ehkaQuasU/SHhJAH3UnhZl6QPx86k1N2+oq+rIXd4kYbpwOKRdJaQLiEIoUmaYKfCa+wdOCdDUv9YGRtCRMWZiHD4omMJZnYv9xFvWvN4XfHiTTuQMXQc1ZwJipXlf22Cbvx+rzyNHDzW99jfp0Sc9+xh5oFoe/O/gF9TT3uA16DBIhRiJeCTCs="
   on:
-    python: 2.7
+    python: 3.6
     #tags: true
     branch: production
