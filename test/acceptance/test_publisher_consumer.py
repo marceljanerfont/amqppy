@@ -22,9 +22,6 @@ BROKER_TEST = "amqp://guest:guest@localhost:5672//"
 
 
 class PublisherConsumerTests(unittest.TestCase):
-    def setUp(self):
-        pass
-
     def test_topic(self):
         condition = threading.Event()
 
@@ -238,9 +235,6 @@ class PublisherConsumerTests(unittest.TestCase):
         condition2.wait()
         print("stopping")
         worker.stop()
-
-    def tearDown(self):
-        pass
 
 
 if __name__ == '__main__':
