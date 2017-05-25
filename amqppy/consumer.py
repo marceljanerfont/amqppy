@@ -16,13 +16,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 import amqppy
 from amqppy import utils
 
-####################################################################
+
 logger = logging.getLogger(__name__)
-handler = logging.StreamHandler()
-handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)-8s] [%(name)-10s] [%(lineno)-4d] %(message)s'))
-logger.addHandler(handler)
-logger.setLevel(logging.DEBUG)
-####################################################################
 
 _ChannelExchange = collections.namedtuple('ChannelExchange', ['channel', 'exchange'])
 
@@ -34,7 +29,7 @@ class Worker(object):
     conn = Connection(host="localhost", userid="guest",password="guest", virtual_host="/")
     """
     def __init__(self, broker, heartbeat_sec=None):
-        self._conn = utils.create_connection(broker=broker, heartbeat_sec=heartbeat_sec)
+        self._conn = utils._create_connection(broker=broker, heartbeat_sec=heartbeat_sec)
         # map(callback) -> (channel, exchange)
         self._callbacks = {}
         self.quit = False

@@ -7,6 +7,7 @@ except ImportError:
 import sys
 import os
 import json
+import logging
 
 # add amqppy path
 sys.path.insert(0, os.path.abspath(
@@ -14,6 +15,11 @@ sys.path.insert(0, os.path.abspath(
 import amqppy
 from amqppy import publisher, utils
 
+handler = logging.StreamHandler()
+handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)-8s] [%(name)-10s] [%(lineno)-4d] %(message)s'))
+logger_publisher = logging.getLogger('amqppy.publisher')
+logger_publisher.addHandler(handler)
+logger_publisher.setLevel(logging.DEBUG)
 
 EXCHANGE_TEST = "amqppy.test"
 BROKER_TEST = "amqp://guest:guest@localhost:5672//"
@@ -22,7 +28,7 @@ BROKER_TEST = "amqp://guest:guest@localhost:5672//"
 class NotRoutedTest(unittest.TestCase):
     def setUp(self):
         # creates exchange
-        self.connection = utils.create_connection(broker=BROKER_TEST)
+        self.connection = utils._create_connection(broker=BROKER_TEST)
         self.channel = self.connection.channel()
         self.channel.exchange_declare(exchange=EXCHANGE_TEST, exchange_type="topic",
                                       passive=False, durable=True, auto_delete=True)
@@ -43,7 +49,7 @@ class NotRoutedTest(unittest.TestCase):
 class ExchangeNotFoundTest(unittest.TestCase):
     def setUp(self):
         # ensure that exchange doesn't exist
-        self.connection = utils.create_connection(broker=BROKER_TEST)
+        self.connection = utils._create_connection(broker=BROKER_TEST)
         self.channel = self.connection.channel()
         exist = False
         try:

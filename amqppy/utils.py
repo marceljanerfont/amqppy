@@ -30,7 +30,7 @@ def parse_url(url):
         **dict(urlparse.parse_qsl(parts.query)))
 
 
-def create_connection(broker, heartbeat_sec=None):
+def _create_connection(broker, heartbeat_sec=None):
     # builds AMQP connection for each broker URL
     params = parse_url(broker)
     return pika.BlockingConnection(pika.ConnectionParameters(
