@@ -9,6 +9,7 @@ import os
 import json
 import time
 import threading
+import logging
 
 # add amqppy path
 sys.path.insert(0, os.path.abspath(
@@ -16,6 +17,16 @@ sys.path.insert(0, os.path.abspath(
 import amqppy
 from amqppy import publisher, consumer, utils
 
+
+handler = logging.StreamHandler()
+handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)-8s] [%(name)-10s] [%(lineno)-4d] %(message)s'))
+logger_publisher = logging.getLogger('amqppy.publisher')
+logger_publisher.addHandler(handler)
+logger_publisher.setLevel(logging.DEBUG)
+
+logger_consumer = logging.getLogger('amqppy.consumer')
+logger_consumer.addHandler(handler)
+logger_consumer.setLevel(logging.DEBUG)
 
 EXCHANGE_TEST = "amqppy.test"
 BROKER_TEST = "amqp://guest:guest@localhost:5672//"
@@ -30,13 +41,11 @@ class PublisherConsumerTests(unittest.TestCase):
                 exchange, routing_key, headers, body))
             condition.set()
 
-        worker = consumer.Worker(broker=BROKER_TEST)
-        worker.add_topic(
-            exchange=EXCHANGE_TEST,
-            routing_key="amqppy.test.topic",
-            request_func=callback_topic)
-
-        worker.run_async()
+        worker = consumer.Worker(broker=BROKER_TEST).\
+            add_topic(exchange=EXCHANGE_TEST,
+                      routing_key="amqppy.test.topic",
+                      request_func=callback_topic).\
+            run_async()
 
         publisher.publish(
             broker=BROKER_TEST,
@@ -54,7 +63,8 @@ class PublisherConsumerTests(unittest.TestCase):
         worker = consumer.Worker(broker=BROKER_TEST).\
             add_request(exchange=EXCHANGE_TEST,
                         routing_key="amqppy.test.rpc",
-                        request_func=callback_request).run_async()
+                        request_func=callback_request).\
+            run_async()
 
         rpc_response = publisher.rpc_request(
             broker=BROKER_TEST,
@@ -106,8 +116,7 @@ class PublisherConsumerTests(unittest.TestCase):
             run_async()
 
         # differents exchange, so routing_key can be the same
-        the_publisher = publisher.Publisher(
-            utils.create_connection(broker=BROKER_TEST))
+        the_publisher = publisher.Publisher(broker=BROKER_TEST)
         the_publisher.publish(exchange=EXCHANGE_TEST + ".1",
                               routing_key="amqppy.test.topic",
                               body=json.dumps({'msg': 'hello world! 1'}))
@@ -141,8 +150,7 @@ class PublisherConsumerTests(unittest.TestCase):
                       request_func=callback_topic_two).\
             run_async()
 
-        the_publisher = publisher.Publisher(
-            utils.create_connection(broker=BROKER_TEST))
+        the_publisher = publisher.Publisher(broker=BROKER_TEST)
         the_publisher.publish(exchange=EXCHANGE_TEST,
                               routing_key="amqppy.test.topic.1",
                               body=json.dumps({'msg': 'hello world! 1'}))
