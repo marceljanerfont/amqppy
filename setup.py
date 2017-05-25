@@ -20,7 +20,7 @@ setup(name='amqppy',
       install_requires=['pika'],
       package_data={'': ['LICENSE', 'README.rst']},
       classifiers=[
-          'Development Status :: 3 - Alpha',
+          'Development Status :: 4 - Beta',
           'Intended Audience :: Developers',
           'License :: OSI Approved :: BSD License',
           'Natural Language :: English',
