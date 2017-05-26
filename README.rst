@@ -2,7 +2,7 @@ amqppy
 ======
 AMQP simplified client for Python
 
-|Version| |Downloads| |Status| |Coverage| |License|
+|Version| |Downloads| |Status| |Coverage| |License| |Docs|
 
 Introduction
 ------------
@@ -23,3 +23,7 @@ amqppy is a very simplified AMQP client stacked over `Pika <https://github.com/p
 
 .. |License| image:: https://img.shields.io/pypi/l/amqppy.svg?
    target: https://pypi.python.org/pypi/amqppy
+
+.. |Docs| image:: https://readthedocs.org/projects/amqppy/badge/?version=stable
+   :target: https://amqppy.readthedocs.org
+   :alt: Documentation Status

@@ -17,6 +17,7 @@ script:
 # code coverage
 after_success:
   - codecov
+# before_deploy: pip install Sphinx && sphinx-build -b html docs build/docs
 # deploy pypi
 deploy:
   provider: pypi
