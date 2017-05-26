@@ -9,11 +9,13 @@ python:
 install: 
   - pip install -r requirements.txt
   - pip install codecov
+  - pip install Sphinx
 services:
   - rabbitmq
 # command to run unit and acceptance tests
 script: 
   - coverage run -m unittest discover -s test
+  - sphinx-build -b html docs build/docs
 # code coverage
 after_success:
   - codecov
