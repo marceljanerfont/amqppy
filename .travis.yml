@@ -1,26 +1,24 @@
 language: python
 python:
   - 2.7
-  # - 3.3
-  # - 3.4
-  # - 3.5
-  # - 3.6
+  - 3.3
+  - 3.4
+  - 3.5
+  - 3.6
 # command to install dependencies
 install: 
   - pip install -r requirements.txt
   - pip install codecov
-  #- pip install Sphinx
 services:
   - rabbitmq
 # command to run unit and acceptance tests
 script: 
   - coverage run -m unittest discover -s test
-  # - sphinx-build -b html docs build/docs
 # code coverage
 after_success:
   - codecov
+# before_deploy: pip install Sphinx && sphinx-build -b html docs build/docs
 # deploy pypi
-before_deploy: pip install Sphinx && sphinx-build -b html docs build/docs
 deploy:
   provider: pypi
   distributions: sdist bdist_wheel

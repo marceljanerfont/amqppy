@@ -7,7 +7,9 @@ extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode',
               'sphinx.ext.intersphinx']
 
 intersphinx_mapping = {'python': ('https://docs.python.org/3/',
-                                  'https://docs.python.org/3/objects.inv')}
+                                  'https://docs.python.org/3/objects.inv'),
+                       'pika': ('https://pika.readthedocs.io',
+                                'http://pika.readthedocs.io/en/latest/objects.inv')}
 
 templates_path = ['_templates']
 
