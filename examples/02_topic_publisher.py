@@ -18,19 +18,7 @@ from amqppy import publisher
 EXCHANGE_TEST = 'amqppy.test'
 BROKER_TEST = 'amqp://guest:guest@localhost:5672//'
 
-"""
-# publish my current time
-publisher.publish(broker=BROKER_TEST,
-                  exchange=EXCHANGE_TEST,
-                  routing_key='amqppy.publisher.topic.datetime',
-                  body=json.dumps({'datetime': datetime.datetime.now().isoformat()}))
 
-# publish my current status
-publisher.publish(broker=BROKER_TEST,
-                  exchange=EXCHANGE_TEST,
-                  routing_key='amqppy.publisher.topic.status',
-                  body=json.dumps({'status': 'working'}))
-"""
 try:
     # do all with only one connection
     topic_publisher = publisher.Publisher(broker=BROKER_TEST)
@@ -44,4 +32,4 @@ try:
                             body=json.dumps({'status': 'working'}))
     print('Topics successfully published.')
 except (amqppy.ExchangeNotFound, amqppy.PublishNotRouted):
-    print('Please, run \'topic_worker.py\' before this.')
+    print('\'02_topic_consumer.py\' should be running before this.')
