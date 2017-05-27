@@ -1,6 +1,13 @@
 Introduction to amqppy
 ======================
-amqppy is a very simplified AMQP client stacked over Pika. It has been tested with RabbitMQ, but it should also work with other AMQP 0-9-1 brokers.
+**amqppy** is a very simplified AMQP client stacked over `Pika <https://github.com/pika/pika>`_. It has been tested with `RabbitMQ <https://www.rabbitmq.com>`_, however it should also work with other AMQP 0-9-1 brokers.
+
+The motivation of **amqppy** is to provide a very simplified and minimal AMQP client interface which can help Python developers to implement easily messaging patterns such as:
+
+* `Topic Publisher-Subscribers <https://www.rabbitmq.com/tutorials/tutorial-five-python.html>`_
+* `RPC Request-Reply <https://www.rabbitmq.com/tutorials/tutorial-six-python.html>`_
+
+And other derivative `messaging patterns <https://www.rabbitmq.com/getstarted.html>`_.
 
 
 Installing amqppy
@@ -17,11 +24,17 @@ Usage Examples
 ==============
 It required an accessible RabbitMQ and a Python environment with the **amqppy** package installed.
 
-Topic publisher-subscriber
+TTopic Publisher-Subscribers
 --------------------------
-This is one of the most common messaging pattern where the publisher sends or publishes message to an AMQP exchange and the subscriber receives only the messages that are of interest. The subscribers interest is modeled by the *Topic* or in terms of AMQP by the **rounting_key**.
+This is one of the most common messaging pattern where the publisher sends or publishes message to an AMQP exchange and the subscriber receives only the messages that are of interest. The subscribers' interest is modeled by the *Topic* or in terms of AMQP by the **rounting_key**. 
 
-First we need to start the subscriber. In **amqppy** this task is done by the *amqppy.consumer.Worker* object:
+.. image:: https://www.rabbitmq.com/img/tutorials/python-five.png
+Image from RabbitMQ `Topic tutorial <https://www.rabbitmq.com/tutorials/tutorial-five-python.html>`_.
+
+Firstly, we need to start the topic subscribers. In **amqppy** this task is done by the *amqppy.consumer.Worker* object.
+
+Topic Subscriber
+________________
 
 .. code-block:: python
 
@@ -40,7 +53,10 @@ First we need to start the subscriber. In **amqppy** this task is done by the *a
 
 The subscriber worker will invoke the *request_func* every time that the published message topic matches with the specified *routing_key*.
 
-One the topic consumer (*subscriber*) is running we can launch the publisher:
+Once the topic ubscriber is running we able to launch the publisher.
+
+Topic Publisher
+________________
 
 .. code-block:: python
 
@@ -52,6 +68,10 @@ One the topic consumer (*subscriber*) is running we can launch the publisher:
                       routing_key='amqppy.publisher.topic.status',
                       body='RUNNING')
 
-And the topic publisher will send a message to the AMQP exchange with the topic *'amqppy.publisher.topic.status'*, so then all the subscribers, in case they do not share the same queue, will receive the message.
+The topic publisher will send a message to the AMQP exchange with the topic *'amqppy.publisher.topic.status'*, so then all the subscribed subscribers, *in case they do not share the same queue*, will receive the message.
 
+RPC Request-Reply
+-----------------
 
+.. image:: https://www.rabbitmq.com/img/tutorials/python-six.png
+Image from RabbitMQ `RPC tutorial <https://www.rabbitmq.com/tutorials/tutorial-six-python.html>`_.
