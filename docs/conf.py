@@ -20,6 +20,8 @@ project = 'amqppy'
 copyright = '2017, Marcel Janer Font and others.'
 
 import amqppy
+import amqppy.publisher
+import amqppy.consumer
 release = amqppy.__version__
 version = '.'.join(release.split('.')[0:1])
 

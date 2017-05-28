@@ -13,7 +13,8 @@ import logging
 sys.path.insert(0, os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..', '..')))
 import amqppy
-from amqppy import publisher, utils
+from amqppy import utils
+from amqppy.publisher import Topic
 
 handler = logging.StreamHandler()
 handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)-8s] [%(name)-10s] [%(lineno)-4d] %(message)s'))
@@ -40,10 +41,9 @@ class NotRoutedTest(unittest.TestCase):
 
     def test_not_routed(self):
         self.assertRaises(amqppy.PublishNotRouted,
-                          lambda: publisher.publish(broker=BROKER_TEST,
-                                                    exchange=EXCHANGE_TEST,
-                                                    routing_key="amqppy.test.topic",
-                                                    body=json.dumps({'msg': 'hello world!'})))
+                          lambda: Topic(broker=BROKER_TEST).publish(exchange=EXCHANGE_TEST,
+                                                                    routing_key="amqppy.test.topic",
+                                                                    body=json.dumps({'msg': 'hello world!'})))
 
 
 class ExchangeNotFoundTest(unittest.TestCase):
@@ -65,10 +65,9 @@ class ExchangeNotFoundTest(unittest.TestCase):
 
     def test_exchange_not_found(self):
         self.assertRaises(amqppy.ExchangeNotFound,
-                          lambda: publisher.publish(broker=BROKER_TEST,
-                                                    exchange=EXCHANGE_TEST,
-                                                    routing_key="amqppy.test.topic",
-                                                    body=json.dumps({'msg': 'hello world!'})))
+                          lambda: Topic(broker=BROKER_TEST).publish(exchange=EXCHANGE_TEST,
+                                                                    routing_key="amqppy.test.topic",
+                                                                    body=json.dumps({'msg': 'hello world!'})))
 
 
 if __name__ == '__main__':
