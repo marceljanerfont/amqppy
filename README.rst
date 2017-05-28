@@ -32,45 +32,43 @@ This is one of the most common messaging pattern where the publisher sends or pu
 .. image:: https://www.rabbitmq.com/img/tutorials/python-five.png
 Image from RabbitMQ `Topic tutorial <https://www.rabbitmq.com/tutorials/tutorial-five-python.html>`_.
 
-Firstly, we need to start the topic subscriber. In **amqppy** this task is done by the *amqppy.consumer.Worker* object.
+Firstly, we need to start the topic subscribers. In **amqppy** this task is done by the *amqppy.consumer.Worker* object.
 
 Topic Subscriber
 ________________
 
 .. code-block:: python
 
-    from amqppy import consumer
+    from amqppy.consumer import Worker
 
     def on_topic_status(exchange, routing_key, headers, body):
         print('Received message from topic \'amqppy.publisher.topic.status\': {}'.format(body))
 
     # subscribe to a topic: 'amqppy.publisher.topic.status'
-    worker = consumer.Worker(broker='amqp://guest:guest@localhost:5672//')
+    worker = Worker(broker='amqp://guest:guest@localhost:5672//')
     worker.add_topic(exchange='amqppy.test',
                      routing_key='amqppy.publisher.topic.status',
-                     request_func=on_topic_status)
+                     on_topic_callback=on_topic_status)
     # it will wait until worker is stopped or an uncaught exception
     worker.run()
 
 The subscriber worker will invoke the *request_func* every time that the published message topic matches with the specified *routing_key*.
 
-Once the topic ubscriber is running we able to launch the publisher.
+Once the topic subscriber is running we able to launch the publisher.
 
 Topic Publisher
 ________________
 
 .. code-block:: python
 
-    from amqppy import publisher
+    from amqppy.publisher import Topic
 
     # publish my current status
-    publisher.publish(broker='amqp://guest:guest@localhost:5672//',
-                      exchange='amqppy.test',
-                      routing_key='amqppy.publisher.topic.status',
-                      body='RUNNING')
+    Topic(broker='amqp://guest:guest@localhost:5672//').publish(exchange='amqppy.test',
+                                                                routing_key='amqppy.publisher.topic.status',
+                                                                body='RUNNING')
 
 The topic publisher will send a message to the AMQP exchange with the topic *'amqppy.publisher.topic.status'*, so then all the subscribed subscribers, *in case they do not share the same queue*, will receive the message.
-
 
 RPC Request-Reply
 -----------------

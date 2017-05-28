@@ -7,8 +7,7 @@ import os
 sys.path.insert(0, os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..')))
 
-import amqppy
-from amqppy import consumer
+from amqppy.consumer import Worker
 
 
 # firstly, run this
@@ -25,10 +24,10 @@ def on_topic_status(exchange, routing_key, headers, body):
 try:
     print('Waiting for publieher topics events, to cancel press ctrl + c')
     # subscribe to a topic: 'amqppy.publisher.topic.status'
-    worker = consumer.Worker(broker=BROKER_TEST)
+    worker = Worker(broker=BROKER_TEST)
     worker.add_topic(exchange=EXCHANGE_TEST,
                      routing_key='amqppy.publisher.topic.status',
-                     request_func=on_topic_status)
+                     on_topic_callback=on_topic_status)
     # it will wait until worker is stopped or an uncaught exception
     worker.run()
 except KeyboardInterrupt:

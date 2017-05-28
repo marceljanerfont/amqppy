@@ -14,38 +14,13 @@ from amqppy import utils
 logger = logging.getLogger(__name__)
 
 
-def publish(broker, routing_key, body, headers=None, exchange=amqppy.AMQP_EXCHANGE, persistent=True):
-    """Publish a message to the given exchange, routing key. This call creates a connection and once the message is sent the connection will be closed.
-    Use class Publisher in case you want to reuse the same connection to send many messages.
+class Topic(object):
+    """This class creates a connection to the message broker and provides a method to publish messages on
+    one topic also known as routing_key in AMQP terms. The class instance will create on single connection
+    to the broker for all the topic published.
 
     :param str broker: The URL for connection to RabbitMQ. Eg: 'amqp://serviceuser:password@rabbit.host:5672//'
-    :param str rounting_key: The routing key to bind on
-    :param str body: A json text is recommended. The body of the message you want to publish.
-    :param dict headers: Message headers.
-    :param str exchange: The exchange you want to publish the message.
-    :param bool persistent: Makes message persistent. The message would not be lost after RabbitMQ restart.
     """
-    publisher = Publisher(broker=broker)
-    publisher.publish(exchange=exchange, routing_key=routing_key, body=body, persistent=persistent, headers=headers)
-
-
-def rpc_request(broker, routing_key, body, exchange=amqppy.AMQP_EXCHANGE, timeout=10):
-    """Makes a RPC request and returns its response. https://www.rabbitmq.com/tutorials/tutorial-six-python.html
-    This call creates and destroys a connection every time, if you want to save connections, please use the class Rpc.
-
-    :param str broker: The URL for connection to RabbitMQ. Eg: 'amqp://serviceuser:password@rabbit.host:5672//'
-    :param str rounting_key: The routing key to bind on
-    :param str body: A json text is recommended. The body of the request.
-    :param str exchange: The exchange you want to publish the message.
-    :param bool timeout: Maximum seconds to wait for the response.
-    """
-    rpc = Rpc(broker=broker)
-    return rpc.request(exchange=exchange, routing_key=routing_key, body=body, timeout=timeout)
-
-####################################################################
-
-
-class Publisher(object):
     def __init__(self, broker):
         self._connection = utils._create_connection(broker=broker)
 
@@ -56,7 +31,7 @@ class Publisher(object):
             self._connection.close()
 
     def publish(self, exchange, routing_key, body, headers=None, persistent=True):
-        """Publish a message to the given exchange, routing key.
+        """Publish a message to the given exchange and a routing key.
 
         :param str exchange: The exchange you want to publish the message.
         :param str rounting_key: The rounting key to bind on
@@ -90,25 +65,29 @@ class Publisher(object):
 
 
 class Rpc(object):
-    # def __init__(self, broker=None, host=None, port=5672, username="guest", password="guest", virtual_host="/"):
-    #    self._connection = amqp_utils.__create_connection(broker=broker, host=host, port=port, username=username, password=password, virtual_host=virtual_host)
+    """The duty of Rpc class is to make RPC requests and returns its responses.
+    `RPC pattern tutorial <https://www.rabbitmq.com/tutorials/tutorial-six-python.html>`_.
+    The class instance will create on single connection to the broker for all the RPC requests.
 
+    :param str broker: The URL for connection to RabbitMQ. Eg: 'amqp://serviceuser:password@rabbit.host:5672//'
+    """
     def __init__(self, broker):
         self._connection = utils._create_connection(broker=broker)
 
     def __del__(self):
-        logger.debug("rpc publisher destructor")
+        logger.debug("rpc destructor")
         if self._connection and self._connection.is_open:
             logger.debug("closeing connection")
             self._connection.close()
 
-    def on_response(self, ch, method, props, body):
+    def _on_response(self, ch, method, props, body):
         if self.corr_id == props.correlation_id:
-            logger.debug("on_response: {}".format(body))
+            logger.debug("_on_response: {}".format(body))
             self.response = body
 
-    def request(self, exchange, routing_key, body, timeout):
-        """Makes a RPC request and returns its response. https://www.rabbitmq.com/tutorials/tutorial-six-python.html
+    def request(self, exchange, routing_key, body, timeout=10):
+        """Makes a RPC request and returns its response.
+        `RPC pattern tutorial <https://www.rabbitmq.com/tutorials/tutorial-six-python.html>`_.
         This call creates and destroys a connection every time, if you want to save connections, please use the class Rpc.
 
         :param str rounting_key: The routing key to bind on
@@ -128,7 +107,7 @@ class Rpc(object):
             channel.queue_bind(queue=self.response_queue, exchange=self.exchange, routing_key=self.response_queue)
 
             # lets listen response
-            channel.basic_consume(queue=self.response_queue, consumer_callback=self.on_response, no_ack=True)
+            channel.basic_consume(queue=self.response_queue, consumer_callback=self._on_response, no_ack=True)
 
             logger.debug("publishing rpc request, exchange: {}, routing_key: {}, body: {}".format(self.exchange, routing_key, body))
             self.response = None

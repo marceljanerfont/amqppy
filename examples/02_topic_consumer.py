@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..')))
 
 import amqppy
-from amqppy import consumer
+from amqppy.consumer import Worker
 
 
 # firstly, run this
@@ -34,16 +34,16 @@ def on_topic_all(exchange, routing_key, headers, body):
 try:
     print('Waiting for publieher topics events, to cancel press ctrl + c')
     # subscribe to the publisher topics
-    worker = consumer.Worker(broker=BROKER_TEST).\
+    worker = Worker(broker=BROKER_TEST).\
         add_topic(exchange=EXCHANGE_TEST,
                   routing_key="amqppy.publisher.topic.datetime",
-                  request_func=on_topic_datetime).\
+                  on_topic_callback=on_topic_datetime).\
         add_topic(exchange=EXCHANGE_TEST,
                   routing_key="amqppy.publisher.topic.status",
-                  request_func=on_topic_status).\
+                  on_topic_callback=on_topic_status).\
         add_topic(exchange=EXCHANGE_TEST,
                   routing_key="amqppy.publisher.topic.*",
-                  request_func=on_topic_all).\
+                  on_topic_callback=on_topic_all).\
         run()
 except KeyboardInterrupt:
     print('Exiting')

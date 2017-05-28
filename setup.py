@@ -1,12 +1,12 @@
 from setuptools import setup
-
+import amqppy
 
 long_description = ('amqppy is a very simplified AMQP client stacked over Pika. '
                     'amqppy is tested with RabbitMQ, but should also work '
                     'with other AMQP 0-9-1 brokers.')
 
 setup(name='amqppy',
-      version='0.0.12',
+      version=amqppy.__version__,
       description='amqppy is a very simplified AMQP client stacked over Pika',
       keywords=['amqp', 'client', 'rabbitmq', 'amqp client'],
       long_description=open('README.rst').read(),

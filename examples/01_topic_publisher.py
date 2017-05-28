@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..')))
 
 import amqppy
-from amqppy import publisher
+from amqppy.publisher import Topic
 
 
 # IMPORTANT: firstly, run 'topic_worker.py'
@@ -18,10 +18,9 @@ BROKER_TEST = 'amqp://guest:guest@localhost:5672//'
 
 try:
     # publish my current status
-    publisher.publish(broker=BROKER_TEST,
-                      exchange=EXCHANGE_TEST,
-                      routing_key='amqppy.publisher.topic.status',
-                      body='RUNNING')
+    Topic(broker=BROKER_TEST).publish(exchange=EXCHANGE_TEST,
+                                      routing_key='amqppy.publisher.topic.status',
+                                      body='RUNNING')
     print('Topics successfully published.')
 except (amqppy.ExchangeNotFound, amqppy.PublishNotRouted):
     print('\'01_topic_consumer.py\' should be running before this.')
