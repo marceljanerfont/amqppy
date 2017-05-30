@@ -44,7 +44,7 @@ class Worker(object):
                 self._callbacks[callback].channel.close()
         self._callbacks = {}
 
-        if self._conn:
+        if self._conn and self._conn.is_open:
             logger.debug('closing connection')
             self._conn.close()
             self._conn = None
@@ -66,7 +66,7 @@ class Worker(object):
         """
         logger.debug("stop")
         self.quit = True
-        self.join()
+        self._join()
         self._close()
 
     def add_request(self, routing_key, on_request_callback, exchange=amqppy.AMQP_EXCHANGE, durable=False, auto_delete=True,
@@ -102,6 +102,12 @@ class Worker(object):
             deliver = args[1]
             properties = args[2]
             message = args[3]
+            # convert message body to string
+            if isinstance(message, bytes):
+                message = message.decode("utf-8")
+            if not isinstance(message, str):
+                logger.warning("_profiler_wrapper_request, type: {}, body: {}".format(type(message), message))
+
             logger.debug("Starting request \'{}\'".format(on_request_callback.__name__))
             # response = on_request_callback(*args, **kwargs)
             start = time.time()
@@ -182,6 +188,11 @@ class Worker(object):
             deliver = args[1]
             properties = args[2]
             message = args[3]
+            # convert message body to string
+            if isinstance(message, bytes):
+                message = message.decode("utf-8")
+            if not isinstance(message, str):
+                logger.warning("_profiler_wrapper_topic, type: {}, body: {}".format(type(message), message))
             # logger.debug("Properties vars: {}".format(vars(properties)))
             logger.debug("Starting request \'{}\'".format(on_topic_callback.__name__))
             start = time.time()
@@ -205,9 +216,8 @@ class Worker(object):
         """ Start worker to listen. This will block the execution until the worker is stopped or an uncaught Exception  """
         logger.debug('Running worker, waiting for the first message...')
         while not self.quit:
-            self._conn.process_data_events()
-            time.sleep(0.1)
-        logger.debug("Exiting worker.")
+            self._conn.process_data_events(0.5)
+        logger.debug("exiting from worker run")
 
     def run_async(self):
         """ Start asynchronously worker to listen. The execution thread will follow after this call, hence is not blocked.  """
@@ -215,7 +225,7 @@ class Worker(object):
         self.thread.start()
         return self  # Fluent pattern
 
-    def join(self):
+    def _join(self):
         """ Waits until worker has ended """
-        if self.thread:
+        if self.thread and self.thread.is_alive():
             self.thread.join()

@@ -49,33 +49,35 @@ class PublisherConsumerTests(unittest.TestCase):
                       routing_key="amqppy.test.topic",
                       on_topic_callback=callback_topic).\
             run_async()
+        try:
+            Topic(broker=BROKER_TEST).publish(exchange=EXCHANGE_TEST,
+                                              routing_key="amqppy.test.topic",
+                                              body=json.dumps({'msg': 'hello world!, नमस्कार संसार'}))
 
-        Topic(broker=BROKER_TEST).publish(exchange=EXCHANGE_TEST,
-                                          routing_key="amqppy.test.topic",
-                                          body=json.dumps({'msg': 'hello world!'}))
+            condition.wait()
+        finally:
+            worker.stop()
 
-        condition.wait()
-        worker.stop()
-
-    def test_rpc(self):
+    def test_rpc_echo(self):
         def callback_request(exchange, routing_key, headers, body):
-            return json.dumps(dict(value="Hello budy!"))
+            return body
 
         worker = Worker(broker=BROKER_TEST).\
             add_request(exchange=EXCHANGE_TEST,
                         routing_key="amqppy.test.rpc",
                         on_request_callback=callback_request).\
             run_async()
+        try:
+            message = json.dumps({'msg': 'hello world!, नमस्कार संसार'})
 
-        time.sleep(2)
+            rpc_reply = Rpc(broker=BROKER_TEST).request(exchange=EXCHANGE_TEST,
+                                                        routing_key="amqppy.test.rpc",
+                                                        body=message)
+            print("*** rpc_reply: {}".format(rpc_reply))
+            self.assertEqual(message, rpc_reply)
+        finally:
+            worker.stop()
 
-        rpc_reply = Rpc(broker=BROKER_TEST).request(exchange=EXCHANGE_TEST,
-                                                    routing_key="amqppy.test.rpc",
-                                                    body=json.dumps({'msg': 'hello world!'}))
-        print("*** rpc_reply: {}".format(rpc_reply))
-
-        worker.stop()
-    
     def test_rpc_timeout(self):
         def callback_request(exchange, routing_key, headers, body):
             time.sleep(2)
@@ -85,14 +87,14 @@ class PublisherConsumerTests(unittest.TestCase):
             add_request(exchange=EXCHANGE_TEST,
                         routing_key="amqppy.test.rpc",
                         on_request_callback=callback_request).run_async()
-
-        self.assertRaises(amqppy.ResponseTimeout,
-                          lambda: Rpc(broker=BROKER_TEST).request(exchange=EXCHANGE_TEST,
-                                                                  routing_key="amqppy.test.rpc",
-                                                                  body=json.dumps({'msg': 'hello world!'}),
-                                                                  timeout=1))
-
-        worker.stop()
+        try:
+            self.assertRaises(amqppy.ResponseTimeout,
+                              lambda: Rpc(broker=BROKER_TEST).request(exchange=EXCHANGE_TEST,
+                                                                      routing_key="amqppy.test.rpc",
+                                                                      body=json.dumps({'msg': 'hello world!, नमस्कार संसार'}),
+                                                                      timeout=1))
+        finally:
+            worker.stop()
 
     def test_many_topics_same_topic_different_exchanges(self):
         condition = threading.Event()
@@ -114,20 +116,18 @@ class PublisherConsumerTests(unittest.TestCase):
                       routing_key="amqppy.test.topic",
                       on_topic_callback=callback_topic_two).\
             run_async()
-
-        # differents exchange, so routing_key can be the same
-        topic = Topic(broker=BROKER_TEST)
-        topic.publish(exchange=EXCHANGE_TEST + ".1",
-                      routing_key="amqppy.test.topic",
-                      body=json.dumps({'msg': 'hello world! 1'}))
-        topic.publish(exchange=EXCHANGE_TEST + ".2",
-                      routing_key="amqppy.test.topic",
-                      body=json.dumps({'msg': 'hello world! 2'}))
-
-        print("waiting..")
-        condition.wait()
-        print("stopping")
-        worker.stop()
+        try:
+            # differents exchange, so routing_key can be the same
+            topic = Topic(broker=BROKER_TEST)
+            topic.publish(exchange=EXCHANGE_TEST + ".1",
+                          routing_key="amqppy.test.topic",
+                          body=json.dumps({'msg': 'hello world! 1'}))
+            topic.publish(exchange=EXCHANGE_TEST + ".2",
+                          routing_key="amqppy.test.topic",
+                          body=json.dumps({'msg': 'hello world! 2'}))
+            condition.wait()
+        finally:
+            worker.stop()
 
     def test_many_topics_same_topic_sameexchanges(self):
         condition = threading.Event()
@@ -150,18 +150,18 @@ class PublisherConsumerTests(unittest.TestCase):
                       on_topic_callback=callback_topic_two).\
             run_async()
 
-        topic = Topic(broker=BROKER_TEST)
-        topic.publish(exchange=EXCHANGE_TEST,
-                      routing_key="amqppy.test.topic.1",
-                      body=json.dumps({'msg': 'hello world! 1'}))
-        topic.publish(exchange=EXCHANGE_TEST,
-                      routing_key="amqppy.test.topic.2",
-                      body=json.dumps({'msg': 'hello world! 2'}))
+        try:
+            topic = Topic(broker=BROKER_TEST)
+            topic.publish(exchange=EXCHANGE_TEST,
+                          routing_key="amqppy.test.topic.1",
+                          body=json.dumps({'msg': 'hello world! 1'}))
+            topic.publish(exchange=EXCHANGE_TEST,
+                          routing_key="amqppy.test.topic.2",
+                          body=json.dumps({'msg': 'hello world! 2'}))
 
-        print("waiting..")
-        condition.wait()
-        print("stopping")
-        worker.stop()
+            condition.wait()
+        finally:
+            worker.stop()
 
     def test_fanout(self):
         condition1 = threading.Event()
@@ -188,16 +188,14 @@ class PublisherConsumerTests(unittest.TestCase):
                       on_topic_callback=callback_worker_two,
                       queue='amqppy.test.worker.2').\
             run_async()
-
-        Topic(broker=BROKER_TEST).publish(exchange=EXCHANGE_TEST,
-                                          routing_key="amqppy.test.topic",
-                                          body=json.dumps({'msg': 'hello world!'}))
-
-        print("waiting..")
-        condition1.wait()
-        condition2.wait()
-        print("stopping")
-        worker.stop()
+        try:
+            Topic(broker=BROKER_TEST).publish(exchange=EXCHANGE_TEST,
+                                              routing_key="amqppy.test.topic",
+                                              body=json.dumps({'msg': 'hello world!, नमस्कार संसार'}))
+            condition1.wait()
+            condition2.wait()
+        finally:
+            worker.stop()
 
     def test_round_robin(self):
         condition1 = threading.Event()
@@ -224,19 +222,18 @@ class PublisherConsumerTests(unittest.TestCase):
                       on_topic_callback=callback_worker_two,
                       queue='amqppy.test.worker').\
             run_async()
+        try:
+            Topic(broker=BROKER_TEST).publish(exchange=EXCHANGE_TEST,
+                                              routing_key="amqppy.test.topic",
+                                              body=json.dumps({'msg': 'hello world1!, नमस्कार संसार'}))
+            Topic(broker=BROKER_TEST).publish(exchange=EXCHANGE_TEST,
+                                              routing_key="amqppy.test.topic",
+                                              body=json.dumps({'msg': 'hello world2!, नमस्कार संसार'}))
+            condition1.wait()
+            condition2.wait()
+        finally:
+            worker.stop()
 
-        Topic(broker=BROKER_TEST).publish(exchange=EXCHANGE_TEST,
-                                          routing_key="amqppy.test.topic",
-                                          body=json.dumps({'msg': 'hello world1!'}))
-        Topic(broker=BROKER_TEST).publish(exchange=EXCHANGE_TEST,
-                                          routing_key="amqppy.test.topic",
-                                          body=json.dumps({'msg': 'hello world2!'}))
-
-        print("waiting..")
-        condition1.wait()
-        condition2.wait()
-        print("stopping")
-        worker.stop()
     """
     TODO:
         test RPC reply uncaught exception

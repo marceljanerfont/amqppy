@@ -83,10 +83,14 @@ class Rpc(object):
 
     def _on_response(self, ch, method, props, body):
         if self.corr_id == props.correlation_id:
-            logger.debug("_on_response, type: {}, body: {}".format(type(body), body))
+            if isinstance(body, bytes):
+                body = body.decode("utf-8")
+            if not isinstance(body, str):
+                logger.warning("_on_response, type: {}, body: {}".format(type(body), body))
+            logger.debug("_on_response body: {}".format(body))
             self.response = json.loads(body)
 
-    def request(self, exchange, routing_key, body, timeout=10):
+    def request(self, exchange, routing_key, body, timeout=10.0):
         """Makes a RPC request and returns its response.
         `RPC pattern tutorial <https://www.rabbitmq.com/tutorials/tutorial-six-python.html>`_.
         This call creates and destroys a connection every time, if you want to save connections, please use the class Rpc.
@@ -127,14 +131,20 @@ class Rpc(object):
                 raise amqppy.PublishNotRouted("Rpc published message was not routed")
 
             # wait for response
+            timeout = max(timeout, 0.1)
             logger.debug("waiting for rpc response... on \'{}\' for {} seconds".format(self.response_queue, timeout))
+            self._connection.process_data_events(timeout)
+            if not self.response:
+                logger.warning("AMQP RPC Timeout has been triggered waiting for the response")
+                raise amqppy.ResponseTimeout("AMQP RPC Timeout has been triggered waiting for the response")
+            """
             start = time.time()
             while self.response is None:
-                time.sleep(0.1)
-                self._connection.process_data_events()
+                self._connection.process_data_events(min(timeout, 1.0))
                 if timeout > 0 and time.time() - start >= timeout:
                     logger.warning("AMQP RPC Timeout has been triggered waiting for the response")
                     raise amqppy.ResponseTimeout("AMQP RPC Timeout has been triggered waiting for the response")
+            """
             # we have the rpc reply
             # is success?
             if "result" in self.response:
