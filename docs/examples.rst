@@ -54,7 +54,7 @@ This pattern is commonly known as *Remote Procedure Call* or *RPC*. And is widel
 .. image:: https://www.rabbitmq.com/img/tutorials/python-six.png
 
 RPC reply
----------
+_________
 It the *Worker* consumer that listens for incoming **requests** and computes the **reply** in the *on_request_callback*:
 
 .. code-block:: python
