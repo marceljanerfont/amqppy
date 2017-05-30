@@ -7,7 +7,7 @@ The motivation of **amqppy** is to provide a very simplified and minimal AMQP cl
 * `Topic Publisher-Subscribers <https://www.rabbitmq.com/tutorials/tutorial-five-python.html>`_
 * `RPC Request-Reply <https://www.rabbitmq.com/tutorials/tutorial-six-python.html>`_
 
- Others derivative `messaging patterns <https://www.rabbitmq.com/getstarted.html>`_ can be implemented tunning some parameters.
+ Others derivative `messaging patterns <https://www.rabbitmq.com/getstarted.html>`_ can be implemented tunning some parameters of the Topic and Rpc objects.
 
 Installing amqppy
 -----------------

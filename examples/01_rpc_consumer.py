@@ -2,6 +2,7 @@
 
 import sys
 import os
+import json
 
 # add amqppy path
 sys.path.insert(0, os.path.abspath(
@@ -17,25 +18,19 @@ EXCHANGE_TEST = 'amqppy.test'
 BROKER_TEST = 'amqp://guest:guest@localhost:5672//'
 
 
-def fib(n):
-    if n <= 1:
-        return n
-    else:
-        return fib(n - 1) + fib(n - 2)
-
-
-def on_rpc_request(exchange, routing_key, headers, body):
+def on_rpc_request_division(exchange, routing_key, headers, body):
     print("RPC request: {}, body: {}".format(routing_key, body))
-    return fib(int(body))
+    args = json.loads(body)
+    return args['dividend'] / args['divisor']
 
 
 try:
     print('Waiting for RPC requst, to cancel press ctrl + c')
-    # subscribe to a rpc request: 'amqppy.requester.rpc.fib'
+    # subscribe to a rpc request: 'amqppy.requester.rpc.division'
     worker = Worker(broker=BROKER_TEST)
     worker.add_request(exchange=EXCHANGE_TEST,
-                       routing_key='amqppy.requester.rpc.fib',
-                       on_request_callback=on_rpc_request)
+                       routing_key='amqppy.requester.rpc.division',
+                       on_request_callback=on_rpc_request_division)
     # it will wait until worker is stopped or an uncaught exception
     worker.run()
 except KeyboardInterrupt:

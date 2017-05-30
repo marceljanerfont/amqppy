@@ -58,6 +58,8 @@ class Topic(object):
         except pika.exceptions.ChannelClosed as e:
             if "NOT_FOUND - no exchange" in str(e):
                 raise amqppy.ExchangeNotFound(str(e))
+            else:
+                raise e
 
         finally:
             if channel and channel.is_open:
@@ -135,8 +137,8 @@ class Rpc(object):
             logger.debug("waiting for rpc response... on \'{}\' for {} seconds".format(self.response_queue, timeout))
             self._connection.process_data_events(timeout)
             if not self.response:
-                logger.warning("AMQP RPC Timeout has been triggered waiting for the response")
-                raise amqppy.ResponseTimeout("AMQP RPC Timeout has been triggered waiting for the response")
+                logger.warning("Rpc Timeout has been triggered waiting for the response")
+                raise amqppy.ResponseTimeout("Rpc Timeout has been triggered waiting for the response")
             """
             start = time.time()
             while self.response is None:
@@ -154,6 +156,11 @@ class Rpc(object):
                 if "error" in self.response:
                     str_error = self.response["error"]
                 raise amqppy.RpcRemoteException(str_error)
+        except pika.exceptions.ChannelClosed as e:
+            if "NOT_FOUND - no exchange" in str(e):
+                raise amqppy.ExchangeNotFound(str(e))
+            else:
+                raise e
         finally:
             if channel and channel.is_open:
                 logger.debug("closing channel")
