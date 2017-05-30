@@ -22,7 +22,7 @@ def on_topic_status(exchange, routing_key, headers, body):
 
 
 try:
-    print('Waiting for publieher topics events, to cancel press ctrl + c')
+    print('Waiting for topics events, to cancel press ctrl + c')
     # subscribe to a topic: 'amqppy.publisher.topic.status'
     worker = Worker(broker=BROKER_TEST)
     worker.add_topic(exchange=EXCHANGE_TEST,

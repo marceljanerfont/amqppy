@@ -12,7 +12,7 @@ import amqppy
 from amqppy.publisher import Topic
 
 
-# IMPORTANT: firstly, run 'topic_worker.py'
+# IMPORTANT: firstly, run 'topic_consumer.py'
 # AMQP Exchange should be of type 'topic'
 
 EXCHANGE_TEST = 'amqppy.test'

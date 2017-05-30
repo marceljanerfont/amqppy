@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..', '..')))
 import amqppy
 from amqppy import utils
-from amqppy.publisher import Topic
+from amqppy.publisher import Topic, Rpc
 
 handler = logging.StreamHandler()
 handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)-8s] [%(name)-10s] [%(lineno)-4d] %(message)s'))
@@ -63,11 +63,17 @@ class ExchangeNotFoundTest(unittest.TestCase):
     def tearDown(self):
         self.connection.close()
 
-    def test_exchange_not_found(self):
+    def test_exchange_not_found_topic(self):
         self.assertRaises(amqppy.ExchangeNotFound,
                           lambda: Topic(broker=BROKER_TEST).publish(exchange=EXCHANGE_TEST,
                                                                     routing_key="amqppy.test.topic",
                                                                     body=json.dumps({'msg': 'hello world!'})))
+
+    def test_exchange_not_found_rpc(self):
+        self.assertRaises(amqppy.ExchangeNotFound,
+                          lambda: Rpc(broker=BROKER_TEST).request(exchange=EXCHANGE_TEST,
+                                                                  routing_key="amqppy.test.rpc",
+                                                                  body=json.dumps({'msg': 'hello world!'})))
 
 
 if __name__ == '__main__':

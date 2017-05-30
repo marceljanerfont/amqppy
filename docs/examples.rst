@@ -1,33 +1,6 @@
-amqppy
-======
-AMQP simplified client for Python
-
-|Version| |Downloads| |Status| |Coverage| |License| |Docs|
-
-Introduction to amqppy
-----------------------
-**amqppy** is a very simplified AMQP client stacked over `Pika <https://github.com/pika/pika>`_. It has been tested with `RabbitMQ <https://www.rabbitmq.com>`_, however it should also work with other AMQP 0-9-1 brokers.
-
-The motivation of **amqppy** is to provide a very simplified and minimal AMQP client interface which can help Python developers to implement easily messaging patterns such as:
-
-* `Topic Publisher-Subscribers <https://www.rabbitmq.com/tutorials/tutorial-five-python.html>`_
-* `RPC Request-Reply <https://www.rabbitmq.com/tutorials/tutorial-six-python.html>`_
-
-Others derivative `messaging patterns <https://www.rabbitmq.com/getstarted.html>`_ can be implemented tunning some parameters of the Topic and Rpc objects.
-
-
-Installing amqppy
------------------
-**amqppy** is available for download via PyPI and may be installed using easy_install or pip::
-
-    pip install amqppy
-
-
-To install from source, run "python setup.py install" in the root source directory.
-
-Documentation
--------------
-**amqppy**  documentation can be found here: `https://amqppy.readthedocs.io <https://amqppy.readthedocs.io>`_
+Usage Examples
+==============
+It requires an accessible RabbitMQ and a Python environment with the **amqppy** package installed.
 
 Topic Publisher-Subscribers
 ---------------------------
@@ -117,23 +90,3 @@ The code below shows how to do a Rpc request using *amqppy.publisher.Rpc*
                                              body=json.dumps({'dividend': 3.23606797749979, 'divisor': 2.0}))
     print('RPC result: {}.'.format(result))
 
-
-
-.. |Version| image:: https://img.shields.io/pypi/v/amqppy.svg?
-   :target: http://badge.fury.io/py/amqppy
-
-.. |Status| image:: https://img.shields.io/travis/marceljanerfont/amqppy.svg?
-   :target: https://travis-ci.org/marceljanerfont/amqppy
-
-.. |Coverage| image:: https://img.shields.io/codecov/c/github/marceljanerfont/amqppy.svg?
-   :target: https://codecov.io/github/marceljanerfont/amqppy?branch=production
-
-.. |Downloads| image:: https://img.shields.io/pypi/dm/amqppy.svg?
-   :target: https://pypi.python.org/pypi/amqppy
-
-.. |License| image:: https://img.shields.io/pypi/l/amqppy.svg?
-   target: https://pypi.python.org/pypi/amqppy
-
-.. |Docs| image:: https://readthedocs.org/projects/amqppy/badge/?version=stable
-   :target: https://amqppy.readthedocs.org
-   :alt: Documentation Status

@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
-__version__ = '0.0.13'
+__version__ = '0.0.14'
 DEFAULT_PORT = 5672
 AMQP_EXCHANGE = "amqppy"
 AMQP_BROKER = "amqp://localhost:{}//".format(DEFAULT_PORT)
@@ -20,6 +20,10 @@ except ImportError:
 
 # Add NullHandler to prevent logging warnings
 logging.getLogger(__name__).addHandler(NullHandler())
+
+
+class RpcRemoteException(Exception):
+    pass
 
 
 class ResponseTimeout(Exception):
