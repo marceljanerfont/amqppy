@@ -4,6 +4,7 @@ import os
 import pika
 import uuid
 import time
+import json
 import logging
 # add amqppy path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -83,7 +84,7 @@ class Rpc(object):
     def _on_response(self, ch, method, props, body):
         if self.corr_id == props.correlation_id:
             logger.debug("_on_response: {}".format(body))
-            self.response = body
+            self.response = json.loads(body)
 
     def request(self, exchange, routing_key, body, timeout=10):
         """Makes a RPC request and returns its response.
@@ -134,7 +135,15 @@ class Rpc(object):
                 if timeout > 0 and time.time() - start >= timeout:
                     logger.warning("AMQP RPC Timeout has been triggered waiting for the response")
                     raise amqppy.ResponseTimeout("AMQP RPC Timeout has been triggered waiting for the response")
-            return self.response
+            # we have the rpc reply
+            # is success?
+            if "result" in self.response:
+                return self.response["result"]
+            else:
+                str_error = "Unknown RPC error"
+                if "error" in self.response:
+                    str_error = self.response["error"]
+                raise amqppy.RpcRemoteException(str_error)
         finally:
             if channel and channel.is_open:
                 logger.debug("closing channel")

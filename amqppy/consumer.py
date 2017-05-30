@@ -109,15 +109,13 @@ class Worker(object):
                 response = {
                     # message is text, it should be converted in dictionary at request func
                     "result": on_request_callback(exchange=deliver.exchange, routing_key=deliver.routing_key, headers=properties.headers, body=message),
-                    "success": True
                 }
             except Exception as e:
                 logger.warning("Exception in request \'{}\', routing_key: {}\n{}".format(on_request_callback.__name__,
                                                                                          deliver.routing_key,
                                                                                          traceback.format_exc()))
                 response = {
-                    "success": False,
-                    "error": unicode(e)
+                    "error": str(e)
                 }
             elapsed = time.time() - start
             logger.debug('Request \'{}\' finished. Time elapsed: {}'.format(on_request_callback.__name__, elapsed))
@@ -151,7 +149,7 @@ class Worker(object):
                   auto_delete=True, no_ack=True, **kwargs):
         """ Registers a new consumer for a Topic subscriber. These tasks will be executed when a Topic is published by
         publisher.Topic.publish().
-        
+
         :param str rounting_key: The routing key to bind on.
         :param method on_topic_callback: Called when a topic is published.
         :param str queue: The name of the queue. If it is not provided the queue will be named the same as the 'routing_key'.
@@ -159,8 +157,8 @@ class Worker(object):
         :param str exchange: The exchange you want to publish the message.
         :param bool durable: Queue messages survives a reboot of RabbitMQ.
         :param bool auto_delete: Queues will auto-delete after use.
-        :param bool no_ack: Tell the broker that ACK reply is not needed. If it is False, an ACK will be sent automatically each time a message is consumed
-        unless a amqppy.AbortConsume or amqppy.DeadLetterMessage is raised.
+        :param bool no_ack: Tell the broker that ACK reply is not needed. If it is False, an ACK will be sent automatically each \
+        time a message is consumed unless a amqppy.AbortConsume or amqppy.DeadLetterMessage is raised.
         """
         logger.debug("adding topic, exchange: {}, topic: {} --> {}".format(exchange, routing_key, on_topic_callback, kwargs))
         self.no_ack = no_ack

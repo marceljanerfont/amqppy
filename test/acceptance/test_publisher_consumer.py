@@ -238,7 +238,13 @@ class PublisherConsumerTests(unittest.TestCase):
         print("stopping")
         worker.stop()
     """
-    TODO: test rpc exlusive
+    TODO:
+        test RPC reply uncaught exception
+        test exlusive
+        test abort_consume
+        test dead_letter
+        test empty_worker
+        test auto_delete
     """
 
 

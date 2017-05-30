@@ -22,6 +22,10 @@ except ImportError:
 logging.getLogger(__name__).addHandler(NullHandler())
 
 
+class RpcRemoteException(Exception):
+    pass
+
+
 class ResponseTimeout(Exception):
     pass
 
