@@ -35,7 +35,7 @@ class Worker(object):
         self.thread = None
 
     def __del__(self):
-        logger.debug("consumer worker destructor")
+        # logger.debug("consumer worker destructor")
         self._close()
 
     def _close(self):

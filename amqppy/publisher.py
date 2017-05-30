@@ -78,12 +78,12 @@ class Rpc(object):
     def __del__(self):
         logger.debug("rpc destructor")
         if self._connection and self._connection.is_open:
-            logger.debug("closeing connection")
+            # logger.debug("closeing connection")
             self._connection.close()
 
     def _on_response(self, ch, method, props, body):
         if self.corr_id == props.correlation_id:
-            logger.debug("_on_response: {}".format(body))
+            logger.debug("_on_response, type: {}, body: {}".format(type(body), body))
             self.response = json.loads(body)
 
     def request(self, exchange, routing_key, body, timeout=10):
