@@ -118,6 +118,15 @@ The code below shows how to do a Rpc request using *amqppy.publisher.Rpc*
     print('RPC result: {}.'.format(result))
 
 
+TODO
+====
+* Ensure content type and encoding is message publication
+    - Content-type='application/json'
+    - Content-encoding='UTF-8'
+* Finish testing
+* Finish documentation
+
+
 
 .. |Version| image:: https://img.shields.io/pypi/v/amqppy.svg?
    :target: http://badge.fury.io/py/amqppy
