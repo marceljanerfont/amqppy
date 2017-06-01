@@ -119,6 +119,7 @@ The code below shows how to do a **RPC Request** using an instance of class *amq
 
 
 **TODO:**
+
 * Finish testing
 * Finish documentation
 
