@@ -237,11 +237,11 @@ class PublisherConsumerTests(unittest.TestCase):
     """
     TODO:
         test RPC reply uncaught exception
+        test empty_worker
         test exlusive
+        test auto_delete
         test abort_consume
         test dead_letter
-        test empty_worker
-        test auto_delete
     """
 
 

@@ -31,7 +31,7 @@ Documentation
 
 Topic Publisher-Subscribers
 ---------------------------
-This is one of the most common messaging pattern where the publisher publishes message to an AMQP exchange and the subscriber sreceive only the messages that are of interest. The subscribers' interest is modeled by the *Topic* or in terms of AMQP by the **rounting_key**. 
+This is one of the most common messaging pattern where the publisher publishes message to an AMQP exchange and the subscriber receives only the messages that are of interest. The subscriber's interest is modeled by the *Topic* or in terms of AMQP by the **rounting_key**. 
 
 .. image:: https://www.rabbitmq.com/img/tutorials/python-five.png
 
@@ -39,7 +39,7 @@ Image from RabbitMQ `Topic tutorial <https://www.rabbitmq.com/tutorials/tutorial
 
 Topic Subscriber
 ________________
-Firstly, we need to start the Topic Subscribers or Consumers. In **amqppy** this task is done by the *amqppy.consumer.Worker* object.
+Firstly, we need to start the Topic Subscriber (*also known as Consumer*). In **amqppy** the class **amqppy.consumer.Worker** has this duty.
 
 .. code-block:: python
 
@@ -56,7 +56,7 @@ Firstly, we need to start the Topic Subscribers or Consumers. In **amqppy** this
     # it will wait until worker is stopped or an uncaught exception
     worker.run()
 
-The subscriber worker will invoke the *request_func* every time that the published message topic matches with the specified *routing_key*.
+The subscriber worker will invoke the *on_topic_callback* every time a message is published with a topic that matches with the specified **routing_key**: `'amqppy.publisher.topic.status'`. Note that **routing_key** can contain `wildcards <https://www.rabbitmq.com/tutorials/tutorial-five-python.html>`_ therefore, one subscriber might be listening a set of *Topics*.
 
 Once the topic subscriber is running we able to launch the publisher.
 
@@ -72,7 +72,7 @@ ________________
                                                                 routing_key='amqppy.publisher.topic.status',
                                                                 body='RUNNING')
 
-The topic publisher will send a message to the AMQP exchange with the topic `'amqppy.publisher.topic.status'`, therefore, all the subscribed subscribers will receive the message unless they do not share the same queue. In case they share the same queue a round robin delivery policy would be applied among the subscribers.
+The topic publisher will send a message to the AMQP exchange with the Topic **routing_key**: `'amqppy.publisher.topic.status'`, therefore, all the subscribed subscribers will receive the message unless they do not share the same queue. In case they share the same queue a round-robin dispatching policy would be applied among subscribers/consumers like happens in `work queues <https://www.rabbitmq.com/tutorials/tutorial-two-python.html>`_*.
 
 RPC Request-Reply
 -----------------
@@ -84,7 +84,7 @@ Image from RabbitMQ `RPC tutorial <https://www.rabbitmq.com/tutorials/tutorial-s
 
 RPC Reply
 _________
-An object of type *amqppy.consumer.Worker* listens incoming **RPC requests** and computes the **RPC reply** in the *on_request_callback*. In the example below, the RPC consumer listens on request `'amqppy.requester.rpc.division'` and the division is returned as RPC reply.
+An object of type **amqppy.consumer.Worker** listens incoming **RPC requests** and computes the **RPC reply** in the *on_request_callback*. In the example below, the RPC consumer listens on Request **rounting_key**:`'amqppy.requester.rpc.division'` and the division would be returned as the RPC reply.
 
 .. code-block:: python
 
@@ -105,7 +105,7 @@ An object of type *amqppy.consumer.Worker* listens incoming **RPC requests** and
 
 RPC Request
 ___________
-The code below shows how to do a Rpc request using *amqppy.publisher.Rpc*
+The code below shows how to do a **RPC Request** using an instance of class *amqppy.publisher.Rpc*
 
 .. code-block:: python
 
@@ -116,6 +116,12 @@ The code below shows how to do a Rpc request using *amqppy.publisher.Rpc*
                                              routing_key='amqppy.requester.rpc.division',
                                              body=json.dumps({'dividend': 3.23606797749979, 'divisor': 2.0}))
     print('RPC result: {}.'.format(result))
+
+
+TODO
+^^^
+* Finish testing
+* Finish documentation
 
 
 

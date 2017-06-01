@@ -36,7 +36,7 @@ class Topic(object):
 
         :param str exchange: The exchange you want to publish the message.
         :param str rounting_key: The rounting key to bind on
-        :param str body: A json text is recommended. The Message you want to publish.
+        :param str body: The body of the message you want to publish. It should be of type unicode or string encoded with UTF-8.
         :param dict headers: Message headers.
         :param bool persistent: Makes message persistent. The message would not be lost after RabbitMQ restart.
         """
@@ -48,9 +48,10 @@ class Topic(object):
             publish_result = channel.basic_publish(exchange=exchange,
                                                    routing_key=routing_key,
                                                    properties=pika.BasicProperties(
-                                                       delivery_mode=2 if persistent else 1, headers=headers
-                                                   ),  # 2 -> persistent
-                                                   body=utils.json_dumps(body) if isinstance(body, dict) else body,
+                                                       content_encoding='utf-8',
+                                                       delivery_mode=2 if persistent else 1, headers=headers,  # 2 -> persistent
+                                                   ),
+                                                   body=utils._ensure_utf8(body),
                                                    mandatory=True)  # to know if the message was routed
             if not publish_result:
                 logger.debug("Publisher published message was not routed")
@@ -98,7 +99,7 @@ class Rpc(object):
         This call creates and destroys a connection every time, if you want to save connections, please use the class Rpc.
 
         :param str rounting_key: The routing key to bind on
-        :param str body: A json text is recommended. The body of the request.
+        :param str body: The body of the message request you want to request. It should be of type unicode or string encoded with UTF-8.
         :param str exchange: The exchange you want to publish the message.
         :param bool timeout: Maximum seconds to wait for the response.
         """
@@ -124,9 +125,9 @@ class Rpc(object):
                                                    properties=pika.BasicProperties(
                                                        reply_to=self.response_queue,
                                                        correlation_id=self.corr_id,
-                                                       content_type='application/json',
+                                                       content_encoding='utf-8',
                                                        delivery_mode=1),  # 2 -> persistent
-                                                   body=body,
+                                                   body=utils._ensure_utf8(body),
                                                    mandatory=True)
             if not publish_result:
                 logger.debug("Rpc published message was not routed")
@@ -165,3 +166,4 @@ class Rpc(object):
             if channel and channel.is_open:
                 logger.debug("closing channel")
                 channel.close()
+

@@ -121,7 +121,7 @@ class Worker(object):
                                                                                          deliver.routing_key,
                                                                                          traceback.format_exc()))
                 response = {
-                    "error": str(e)
+                    "error": str(e, encoding='utf8')
                 }
             elapsed = time.time() - start
             logger.debug('Request \'{}\' finished. Time elapsed: {}'.format(on_request_callback.__name__, elapsed))
@@ -137,8 +137,9 @@ class Worker(object):
                     routing_key=routing_key,
                     properties=pika.BasicProperties(
                         correlation_id=properties.correlation_id,
+                        content_encoding='utf-8',
                         content_type='application/json'),
-                    body=json.dumps(response),
+                    body=json.dumps(response, ensure_ascii=False).encode('utf8'),
                     mandatory=True)
                 if not publish_result:
                     raise amqppy.PublishNotRouted("Request response was not routed")
