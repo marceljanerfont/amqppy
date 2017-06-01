@@ -166,4 +166,3 @@ class Rpc(object):
             if channel and channel.is_open:
                 logger.debug("closing channel")
                 channel.close()
-

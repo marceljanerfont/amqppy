@@ -225,9 +225,11 @@ class Worker(object):
     def run(self):
         """ Start worker to listen. This will block the execution until the worker is stopped or an uncaught Exception  """
         logger.info('Running worker, waiting for the first message...')
-        while not self.quit:
-            self._conn.process_data_events(0.5)
-        logger.info("exiting from worker run")
+        try:
+            while not self.quit:
+                self._conn.process_data_events(0.5)
+        finally:
+            logger.info("exiting from worker run")
 
     def run_async(self):
         """ Start asynchronously worker to listen. The execution thread will follow after this call, hence is not blocked.  """
