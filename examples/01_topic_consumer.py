@@ -22,13 +22,15 @@ def on_topic_status(exchange, routing_key, headers, body):
 
 
 try:
-    print('Waiting for topics events, to cancel press ctrl + c')
-    # subscribe to a topic: 'amqppy.publisher.topic.status'
+    # connect to the broker
     worker = Worker(broker=BROKER_TEST)
+    # subscribe to a topic: 'amqppy.publisher.topic.status'
     worker.add_topic(exchange=EXCHANGE_TEST,
                      routing_key='amqppy.publisher.topic.status',
                      on_topic_callback=on_topic_status)
-    # it will wait until worker is stopped or an uncaught exception
+    # wait until worker is stopped or an uncaught exception
+    print('Waiting for topics events, to cancel press ctrl + c')
     worker.run()
 except KeyboardInterrupt:
+    worker.stop()
     print('Exiting')

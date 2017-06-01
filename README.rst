@@ -120,6 +120,7 @@ The code below shows how to do a **RPC Request** using an instance of class *amq
 
 **TODO:**
 
+* Handle exception when there is not Rabbit connection
 * Finish testing
 * Finish documentation
 

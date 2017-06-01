@@ -27,12 +27,21 @@ class Worker(object):
 
     :param str broker: The URL for connection to RabbitMQ. Eg: 'amqp://serviceuser:password@rabbit.host:5672//'
     """
+
     def __init__(self, broker, heartbeat_sec=None):
-        self._conn = utils._create_connection(broker=broker, heartbeat_sec=heartbeat_sec)
         # map(callback) -> (channel, exchange)
         self._callbacks = {}
         self.quit = False
         self.thread = None
+        self._conn = None
+        try:
+            logger.debug("connecting to broker \'{}\'".format(broker))
+            self._conn = utils._create_connection(broker=broker, heartbeat_sec=heartbeat_sec)
+        finally:
+            if self._conn and self._conn.is_open:
+                logger.debug("connected")
+            else:
+                logger.error("cannot connect to broker \'{}\'".format(broker))
 
     def __del__(self):
         # logger.debug("consumer worker destructor")
@@ -43,11 +52,11 @@ class Worker(object):
             if self._callbacks[callback].channel and self._callbacks[callback].channel.is_open:
                 self._callbacks[callback].channel.close()
         self._callbacks = {}
-
         if self._conn and self._conn.is_open:
             logger.debug('closing connection')
             self._conn.close()
             self._conn = None
+            logger.debug('connection closed')
 
     def _create_channel(self, exchange, callback):
         try:
@@ -215,10 +224,10 @@ class Worker(object):
 
     def run(self):
         """ Start worker to listen. This will block the execution until the worker is stopped or an uncaught Exception  """
-        logger.debug('Running worker, waiting for the first message...')
+        logger.info('Running worker, waiting for the first message...')
         while not self.quit:
             self._conn.process_data_events(0.5)
-        logger.debug("exiting from worker run")
+        logger.info("exiting from worker run")
 
     def run_async(self):
         """ Start asynchronously worker to listen. The execution thread will follow after this call, hence is not blocked.  """
