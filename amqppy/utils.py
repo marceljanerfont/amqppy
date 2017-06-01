@@ -40,3 +40,12 @@ def _create_connection(broker, heartbeat_sec=None):
         credentials=pika.PlainCredentials(params["username"], params["password"]),
         socket_timeout=1.25,
         heartbeat_interval=heartbeat_sec))
+
+
+def _ensure_utf8(body):
+    if sys.version_info[0] < 3:
+        # python 2
+        return unicode(body).encode('utf8')
+    else:
+        # python 3
+        return str(body).encode('utf8')
