@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
-__version__ = '0.0.15'
+__version__ = '0.0.16'
 DEFAULT_PORT = 5672
 AMQP_EXCHANGE = "amqppy"
 AMQP_BROKER = "amqp://localhost:{}//".format(DEFAULT_PORT)

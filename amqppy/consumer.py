@@ -27,7 +27,6 @@ class Worker(object):
 
     :param str broker: The URL for connection to RabbitMQ. Eg: 'amqp://serviceuser:password@rabbit.host:5672//'
     """
-
     def __init__(self, broker, heartbeat_sec=None):
         # map(callback) -> (channel, exchange)
         self._callbacks = {}
