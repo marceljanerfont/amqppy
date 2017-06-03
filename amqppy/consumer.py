@@ -201,8 +201,8 @@ class Worker(object):
             # convert message body to string
             if isinstance(message, bytes):
                 message = message.decode("utf-8")
-            if not isinstance(message, str):
-                logger.warning("_profiler_wrapper_topic, type: {}, body: {}".format(type(message), message))
+            if not utils._is_string(message):
+                logger.warning("_profiler_wrapper_topic, message in not string, is of type: {}".format(type(message)))
             # logger.debug("Properties vars: {}".format(vars(properties)))
             logger.debug("Starting request \'{}\'".format(on_topic_callback.__name__))
             start = time.time()
