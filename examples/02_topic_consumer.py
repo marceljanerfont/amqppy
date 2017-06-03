@@ -8,7 +8,6 @@ import json
 sys.path.insert(0, os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..')))
 
-import amqppy
 from amqppy.consumer import Worker
 
 
@@ -33,7 +32,6 @@ def on_topic_all(exchange, routing_key, headers, body):
 
 try:
     print('Waiting for publieher topics events, to cancel press ctrl + c')
-    # subscribe to the publisher topics
     worker = Worker(broker=BROKER_TEST).\
         add_topic(exchange=EXCHANGE_TEST,
                   routing_key="amqppy.publisher.topic.datetime",
@@ -46,4 +44,5 @@ try:
                   on_topic_callback=on_topic_all).\
         run()
 except KeyboardInterrupt:
+    worker.stop()
     print('Exiting')

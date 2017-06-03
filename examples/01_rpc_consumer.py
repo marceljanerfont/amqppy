@@ -25,13 +25,15 @@ def on_rpc_request_division(exchange, routing_key, headers, body):
 
 
 try:
-    print('Waiting for RPC requst, to cancel press ctrl + c')
-    # subscribe to a rpc request: 'amqppy.requester.rpc.division'
+    # connect to the broker
     worker = Worker(broker=BROKER_TEST)
+    # subscribe to a rpc request: 'amqppy.requester.rpc.division'
     worker.add_request(exchange=EXCHANGE_TEST,
                        routing_key='amqppy.requester.rpc.division',
                        on_request_callback=on_rpc_request_division)
-    # it will wait until worker is stopped or an uncaught exception
+    print('Waiting for RPC requst, to cancel press ctrl + c')
+    # wait until worker is stopped or an uncaught exception
     worker.run()
 except KeyboardInterrupt:
+    worker.stop()
     print('Exiting')

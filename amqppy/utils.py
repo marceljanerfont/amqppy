@@ -49,3 +49,13 @@ def _ensure_utf8(body):
     else:
         # python 3
         return str(body).encode('utf8')
+
+
+def _is_string(message):
+    if sys.version_info[0] < 3:
+        # python 2
+        return isinstance(message, str) or isinstance(message, unicode)
+    else:
+        # python 3
+        return isinstance(message, str)
+
