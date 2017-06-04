@@ -1,5 +1,5 @@
-amqppy Exceptions
------------------
+Exceptions
+----------
 
 .. autoclass:: amqppy.RpcRemoteException
 
