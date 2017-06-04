@@ -94,11 +94,17 @@ class Worker(object):
         channel.queue_declare(queue=routing_key, durable=durable, auto_delete=auto_delete)
         channel.queue_bind(queue=routing_key, exchange=exchange, routing_key=routing_key)
         channel.confirm_delivery()
-        channel.basic_consume(
-            exclusive=exclusive,
-            queue=routing_key,
-            consumer_callback=self._profiler_wrapper_request(on_request_callback),
-            no_ack=True)
+        try:
+            channel.basic_consume(
+                exclusive=exclusive,
+                queue=routing_key,
+                consumer_callback=self._profiler_wrapper_request(on_request_callback),
+                no_ack=True)
+        except pika.exceptions.ChannelClosed as e:
+            if "in exclusive use" in str(e):
+                raise amqppy.ExclusiveQueue(str(e))
+            else:
+                raise e
 
         return self  # Fluent pattern
 
@@ -179,13 +185,20 @@ class Worker(object):
         self.no_ack = no_ack
         channel = self._create_channel(exchange, on_topic_callback)
         queue_name = queue if queue else routing_key
-        channel.queue_declare(queue=queue_name, exclusive=exclusive, durable=durable, auto_delete=auto_delete,
+        channel.queue_declare(queue=queue_name, durable=durable, auto_delete=auto_delete,
                               arguments=kwargs)
         channel.queue_bind(queue=queue_name, exchange=exchange, routing_key=routing_key)
-        channel.basic_consume(
-            queue=queue_name,
-            consumer_callback=self._profiler_wrapper_topic(on_topic_callback),
-            no_ack=no_ack)
+        try:
+            channel.basic_consume(
+                queue=queue_name,
+                exclusive=exclusive,
+                consumer_callback=self._profiler_wrapper_topic(on_topic_callback),
+                no_ack=no_ack)
+        except pika.exceptions.ChannelClosed as e:
+            if "in exclusive use" in str(e):
+                raise amqppy.ExclusiveQueue(str(e))
+            else:
+                raise e
         return self  # Fluent pattern
 
     def _profiler_wrapper_topic(self, on_topic_callback):
