@@ -2,7 +2,7 @@ amqppy
 ======
 AMQP simplified client for Python
 
-|Version| |Status| |Coverage| |License| |Docs|
+|Version| |Versions| |Status| |Coverage| |License| |Docs|
 
 Introduction to amqppy
 ----------------------
@@ -127,6 +127,9 @@ The code below shows how to do a **RPC Request** using an instance of class *amq
 
 .. |Version| image:: https://img.shields.io/pypi/v/amqppy.svg?
    :target: http://badge.fury.io/py/amqppy
+
+.. |Versions| image:: https://img.shields.io/pypi/pyversions/amqppy.svg
+    :target: https://pypi.python.org/pypi/amqppy
 
 .. |Status| image:: https://img.shields.io/travis/marceljanerfont/amqppy.svg?
    :target: https://travis-ci.org/marceljanerfont/amqppy
