@@ -1,5 +1,6 @@
 Core Class and Module Documentation
 ===================================
+
 .. toctree::
    :hidden:
    :maxdepth: 1
@@ -7,4 +8,5 @@ Core Class and Module Documentation
    topic
    rpc
    worker
+   exceptions
    

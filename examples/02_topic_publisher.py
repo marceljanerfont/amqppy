@@ -9,7 +9,6 @@ sys.path.insert(0, os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..')))
 
 import amqppy
-from amqppy.publisher import Topic
 
 
 # IMPORTANT: firstly, run 'topic_consumer.py'
@@ -21,7 +20,7 @@ BROKER_TEST = 'amqp://guest:guest@localhost:5672//'
 
 try:
     # do all with only one connection
-    topic = Topic(broker=BROKER_TEST)
+    topic = amqppy.Topic(broker=BROKER_TEST)
     # publish my current time
     topic.publish(exchange=EXCHANGE_TEST,
                   routing_key='amqppy.publisher.topic.datetime',

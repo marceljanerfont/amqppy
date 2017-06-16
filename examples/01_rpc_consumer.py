@@ -8,7 +8,7 @@ import json
 sys.path.insert(0, os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..')))
 
-from amqppy.consumer import Worker
+import amqppy
 
 
 # firstly, run this
@@ -26,7 +26,7 @@ def on_rpc_request_division(exchange, routing_key, headers, body):
 
 try:
     # connect to the broker
-    worker = Worker(broker=BROKER_TEST)
+    worker = amqppy.Worker(broker=BROKER_TEST)
     # subscribe to a rpc request: 'amqppy.requester.rpc.division'
     worker.add_request(exchange=EXCHANGE_TEST,
                        routing_key='amqppy.requester.rpc.division',

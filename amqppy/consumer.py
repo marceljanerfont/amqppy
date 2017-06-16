@@ -27,6 +27,7 @@ class Worker(object):
 
     :param str broker: The URL for connection to RabbitMQ. Eg: 'amqp://serviceuser:password@rabbit.host:5672//'
     """
+
     def __init__(self, broker, heartbeat_sec=None):
         # map(callback) -> (channel, exchange)
         self._callbacks = {}
@@ -40,7 +41,9 @@ class Worker(object):
             if self._conn and self._conn.is_open:
                 logger.debug("connected")
             else:
-                logger.error("cannot connect to broker \'{}\'".format(broker))
+                error = "Cannot connect to broker \'{}\'".format(broker)
+                logger.error(error)
+                raise amqppy.BrokenConnection(error)
 
     def __del__(self):
         # logger.debug("consumer worker destructor")

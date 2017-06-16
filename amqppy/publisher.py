@@ -3,7 +3,6 @@ import sys
 import os
 import pika
 import uuid
-import time
 import json
 import logging
 # add amqppy path
@@ -22,8 +21,19 @@ class Topic(object):
 
     :param str broker: The URL for connection to RabbitMQ. Eg: 'amqp://serviceuser:password@rabbit.host:5672//'
     """
+
     def __init__(self, broker):
-        self._connection = utils._create_connection(broker=broker)
+        self._connection = None
+        try:
+            logger.debug("connecting to broker \'{}\'".format(broker))
+            self._connection = utils._create_connection(broker=broker)
+        finally:
+            if self._connection and self._connection.is_open:
+                logger.debug("connected")
+            else:
+                error = "Cannot connect to broker \'{}\'".format(broker)
+                logger.error(error)
+                raise amqppy.BrokenConnection(error)
 
     def __del__(self):
         logger.debug("publisher destructor")
@@ -75,8 +85,19 @@ class Rpc(object):
 
     :param str broker: The URL for connection to RabbitMQ. Eg: 'amqp://serviceuser:password@rabbit.host:5672//'
     """
+
     def __init__(self, broker):
-        self._connection = utils._create_connection(broker=broker)
+        self._connection = None
+        try:
+            logger.debug("connecting to broker \'{}\'".format(broker))
+            self._connection = utils._create_connection(broker=broker)
+        finally:
+            if self._connection and self._connection.is_open:
+                logger.debug("connected")
+            else:
+                error = "Cannot connect to broker \'{}\'".format(broker)
+                logger.error(error)
+                raise amqppy.BrokenConnection(error)
 
     def __del__(self):
         logger.debug("rpc destructor")
