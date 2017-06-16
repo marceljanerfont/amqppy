@@ -7,7 +7,7 @@ import os
 sys.path.insert(0, os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..')))
 
-from amqppy.consumer import Worker
+import amqppy
 
 
 # firstly, run this
@@ -23,7 +23,7 @@ def on_topic_status(exchange, routing_key, headers, body):
 
 try:
     # connect to the broker
-    worker = Worker(broker=BROKER_TEST)
+    worker = amqppy.Worker(broker=BROKER_TEST)
     # subscribe to a topic: 'amqppy.publisher.topic.status'
     worker.add_topic(exchange=EXCHANGE_TEST,
                      routing_key='amqppy.publisher.topic.status',

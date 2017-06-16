@@ -1,8 +1,13 @@
 # -*- encoding: utf-8 -*-
-__version__ = '0.0.17'
+__version__ = '0.0.18'
+
 DEFAULT_PORT = 5672
 AMQP_EXCHANGE = "amqppy"
 AMQP_BROKER = "amqp://localhost:{}//".format(DEFAULT_PORT)
+
+from .utils import create_url, parse_url
+from .consumer import Worker
+from .publisher import Topic, Rpc
 
 import logging
 try:
@@ -17,6 +22,13 @@ except ImportError:
 
 # Add NullHandler to prevent logging warnings
 logging.getLogger(__name__).addHandler(NullHandler())
+
+
+class BrokenConnection(Exception):
+    '''
+    It would be raised when the connection to the broker fails
+    '''
+    pass
 
 
 class RpcRemoteException(Exception):

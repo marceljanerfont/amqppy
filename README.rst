@@ -43,13 +43,14 @@ Firstly, we need to start the Topic Subscriber (*also known as Consumer*). In **
 
 .. code-block:: python
 
-    from amqppy.consumer import Worker
+    import amqppy
+    BROKER = 'amqp://guest:guest@localhost:5672//'
 
     def on_topic_status(exchange, routing_key, headers, body):
         print('Received message from topic \'amqppy.publisher.topic.status\': {}'.format(body))
 
     # subscribe to a topic: 'amqppy.publisher.topic.status'
-    worker = Worker(broker='amqp://guest:guest@localhost:5672//')
+    worker = amqppy.Worker(BROKER)
     worker.add_topic(exchange='amqppy.test',
                      routing_key='amqppy.publisher.topic.status',
                      on_topic_callback=on_topic_status)
@@ -65,14 +66,15 @@ ________________
 
 .. code-block:: python
 
-    from amqppy.publisher import Topic
+    import amqppy
+    BROKER = 'amqp://guest:guest@localhost:5672//'
 
     # publish my current status
-    Topic(broker='amqp://guest:guest@localhost:5672//').publish(exchange='amqppy.test',
-                                                                routing_key='amqppy.publisher.topic.status',
-                                                                body='RUNNING')
+    amqppy.Topic(BROKER).publish(exchange='amqppy.test',
+                                 routing_key='amqppy.publisher.topic.status',
+                                 body='RUNNING')
 
-The topic publisher will send a message to the AMQP exchange with the Topic **routing_key**: `'amqppy.publisher.topic.status'`, therefore, all the subscribed subscribers will receive the message unless they do not share the same queue. In case they share the same queue a round-robin dispatching policy would be applied among subscribers/consumers like happens in `work queues <https://www.rabbitmq.com/tutorials/tutorial-two-python.html>`_*.
+The topic publisher will send a message to the AMQP exchange with the Topic **routing_key**: `'amqppy.publisher.topic.status'`, therefore, all the subscribed subscribers will receive the message unless they do not share the same queue. In case they share the same queue a round-robin dispatching policy would be applied among subscribers/consumers like happens in `work queues <https://www.rabbitmq.com/tutorials/tutorial-two-python.html>`_.
 
 RPC Request-Reply
 -----------------
@@ -88,14 +90,15 @@ An object of type **amqppy.consumer.Worker** listens incoming **RPC requests** a
 
 .. code-block:: python
 
-    from amqppy.consumer import Worker
+    import amqppy
+    BROKER = 'amqp://guest:guest@localhost:5672//'
 
     def on_rpc_request_division(exchange, routing_key, headers, body):
         args = json.loads(body)
         return args['dividend'] / args['divisor']
 
     # subscribe to a rpc request: 'amqppy.requester.rpc.division'
-    worker = Worker(broker='amqp://guest:guest@localhost:5672//')
+    worker = Worker(BROKER)
     worker.add_request(exchange='amqppy.test',
                        routing_key='amqppy.requester.rpc.division',
                        on_request_callback=on_rpc_request_division)
@@ -109,20 +112,16 @@ The code below shows how to do a **RPC Request** using an instance of class *amq
 
 .. code-block:: python
 
-    from amqppy.publisher import Rpc
+    import amqppy
+    BROKER = 'amqp://guest:guest@localhost:5672//'
 
     # do a Rpc request 'amqppy.requester.rpc.division'
-    result = Rpc(broker='amqp://guest:guest@localhost:5672//').request(exchange='amqppy.test',
-                                             routing_key='amqppy.requester.rpc.division',
-                                             body=json.dumps({'dividend': 3.23606797749979, 'divisor': 2.0}))
+    result = amqppy.Rpc(BROKER).request(exchange='amqppy.test',
+                                        routing_key='amqppy.requester.rpc.division',
+                                        body=json.dumps({'dividend': 3.23606797749979, 'divisor': 2.0}))
     print('RPC result: {}.'.format(result))
 
 
-**TODO:**
-
-* Handle exception when there is not Rabbit connection
-* Finish testing
-* Finish documentation
 
 
 .. |Version| image:: https://img.shields.io/pypi/v/amqppy.svg?
