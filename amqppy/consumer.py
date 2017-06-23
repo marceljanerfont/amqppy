@@ -120,6 +120,7 @@ class Worker(object):
             properties = args[2]
             message = args[3]
             # convert message body to string
+            # output.decode('string-escape').strip('"')
             if isinstance(message, bytes):
                 message = message.decode("utf-8")
             if not isinstance(message, str):
@@ -128,6 +129,7 @@ class Worker(object):
             logger.debug("Starting request \'{}\'".format(on_request_callback.__name__))
             # response = on_request_callback(*args, **kwargs)
             start = time.time()
+            rpc_exception = None
             try:
                 response = {
                     # message is text, it should be converted in dictionary at request func
@@ -137,8 +139,9 @@ class Worker(object):
                 logger.warning("Exception in request \'{}\', routing_key: {}\n{}".format(on_request_callback.__name__,
                                                                                          deliver.routing_key,
                                                                                          traceback.format_exc()))
+                rpc_exception = e
                 response = {
-                    "error": str(e, encoding='utf8')
+                    "error": utils._ensure_utf8(rpc_exception)
                 }
             elapsed = time.time() - start
             logger.debug('Request \'{}\' finished. Time elapsed: {}'.format(on_request_callback.__name__, elapsed))
@@ -167,6 +170,9 @@ class Worker(object):
                 logger.error('Exception on publish message to routing_key: {}. Exception message: {}'.format(
                     routing_key, traceback.format_exc()))
             logger.debug('RPC response sent.')
+            # throw exception to the rpc server/consumer
+            if rpc_exception:
+                raise rpc_exception
         return _wrapper
 
     def add_topic(self, routing_key, on_topic_callback, queue=None, exclusive=False, exchange=amqppy.AMQP_EXCHANGE, durable=False,
