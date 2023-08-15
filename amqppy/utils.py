@@ -39,7 +39,7 @@ def _create_connection(broker, heartbeat_sec=None):
         virtual_host=params["virtual_host"],
         credentials=pika.PlainCredentials(params["username"], params["password"]),
         socket_timeout=1.25,
-        heartbeat_interval=heartbeat_sec))
+        heartbeat=heartbeat_sec))
 
 
 def _ensure_utf8(body):

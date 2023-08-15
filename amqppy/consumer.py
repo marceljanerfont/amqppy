@@ -201,8 +201,8 @@ class Worker(object):
             channel.basic_consume(
                 queue=queue_name,
                 exclusive=exclusive,
-                consumer_callback=self._profiler_wrapper_topic(on_topic_callback),
-                no_ack=no_ack)
+                on_message_callback=self._profiler_wrapper_topic(on_topic_callback),
+                auto_ack =no_ack)
         except pika.exceptions.ChannelClosed as e:
             if "in exclusive use" in str(e):
                 raise amqppy.ExclusiveQueue(str(e))
